@@ -1,0 +1,1270 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="RokPet – ស្វែងរកមន្ទីរពេទ្យ និងគ្លីនិកនៅកម្ពុជា (prototype, sample data)">
+<style>
+/* base reset (normally added by the Artifact viewer) */
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>រកពេទ្យ PC ភ្លឺ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@500;600;700&family=Noto+Sans+Khmer:wght@400;500;600&display=swap">
+<style>
+/* Layout: desktop app shell — top bar with role switch; public = filter rail + results, staff/admin = side nav + work area. Emergency red is the only loud color. */
+:root{
+  --bg:#F2F4F1; --surface:#FFFFFF; --surface-2:#E8EDE9; --line:#D3DBD5;
+  --fg:#14231E; --muted:#56665F;
+  --jade:#0D6B57; --jade-soft:#DCEFE8; --on-jade:#FFFFFF;
+  --teal:#1F5F7A; --teal-soft:#DDEBF2; --on-teal:#FFFFFF;
+  --red:#BF2A20; --red-soft:#FBE3E0; --on-red:#FFFFFF;
+  --gold:#86621A; --gold-soft:#F5EACD;
+  --open:#1F7A3A; --closed:#9A3B2E; --warn:#9A6A00;
+  --f-display:"Kantumruy Pro","Noto Sans Khmer","Khmer OS",sans-serif;
+  --f-body:"Noto Sans Khmer","Kantumruy Pro","Khmer OS",sans-serif;
+  --r:12px;
+}
+
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.75}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--jade);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.5;margin:0;text-wrap:balance}
+h1{font-size:1.5rem} h2{font-size:1.15rem} h3{font-size:1rem;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)} .small{font-size:.85rem}
+.num{font-variant-numeric:tabular-nums}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1240px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;font-family:var(--f-display);font-weight:700;font-size:1.3rem;color:var(--jade)}
+.brand svg{width:30px;height:30px}
+.pnav{display:flex;gap:4px}
+.pnav button{background:none;border:0;padding:6px 12px;border-radius:8px;font-weight:500;color:var(--muted)}
+.pnav button.on{color:var(--jade);background:var(--jade-soft)}
+.sp{flex:1}
+.role{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;padding:5px 14px;font-size:.88rem;white-space:nowrap}
+.seg button.on{background:var(--jade);color:var(--on-jade)}
+.demo-tag{font-size:.72rem;color:var(--gold);background:var(--gold-soft);padding:2px 10px;border-radius:99px;white-space:nowrap}
+
+.page{max-width:1240px;margin:0 auto;padding-inline:24px;padding-block:24px 64px}
+@media (max-width:640px){.page{padding-inline:16px}.top-in{padding:10px 16px}.role{width:100%;flex-wrap:wrap}.role .seg{flex-wrap:wrap;border-radius:12px}.pnav{flex-wrap:wrap}}
+
+/* generic */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 14px;font-weight:500;text-decoration:none;color:var(--fg);line-height:1.4}
+.btn svg{width:16px;height:16px;flex:none}
+.btn.pri{background:var(--jade);border-color:var(--jade);color:var(--on-jade)}
+.btn.red{background:var(--red);border-color:var(--red);color:var(--on-red)}
+.btn.ghost{border-color:transparent;background:none;color:var(--jade)}
+.btn.sm{padding:4px 10px;font-size:.85rem}
+.btn:disabled{opacity:.5;cursor:default}
+.link{background:none;border:0;padding:0;color:var(--jade);font-weight:500;text-decoration:none;cursor:pointer}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:12px;min-width:0}
+.badge{display:inline-block;font-size:.75rem;padding:1px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap;line-height:1.7}
+.badge.red{background:var(--red-soft);color:var(--red);font-weight:600}
+.badge.jade{background:var(--jade-soft);color:var(--jade);font-weight:600}
+.badge.teal{background:var(--teal-soft);color:var(--teal);font-weight:600}
+.badge.gold{background:var(--gold-soft);color:var(--gold);font-weight:600}
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.crumbs{font-size:.85rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.crumbs button{background:none;border:0;padding:0;color:var(--jade)}
+
+/* home */
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.big{display:flex;align-items:center;gap:16px;padding:18px 20px;border:0;border-radius:var(--r);text-align:left}
+.big svg{width:44px;height:44px;flex:none}
+.big b{display:block;font-family:var(--f-display);font-size:1.25rem;line-height:1.45}
+.big small{font-size:.88rem;opacity:.92}
+.big.er{background:var(--red);color:var(--on-red)}
+.big.h24{background:var(--teal);color:var(--on-teal)}
+.searchrow{display:grid;grid-template-columns:1fr auto auto;gap:12px;margin-top:14px}
+.search{position:relative}
+.search input{width:100%;padding:12px 14px 12px 44px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--surface);font-size:1rem}
+.search input:focus{border-color:var(--jade);outline:none}
+.search>svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--muted)}
+.ac{position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 10px 28px rgba(0,0,0,.14);z-index:30;max-height:60vh;overflow:auto}
+.ac-g{padding:6px 14px 2px;font-size:.75rem;letter-spacing:.02em;color:var(--muted)}
+.ac button{display:block;width:100%;text-align:left;background:none;border:0;padding:8px 14px}
+.ac button:hover,.ac button.on{background:var(--jade-soft)}
+.way{display:flex;align-items:center;gap:10px;padding:0 18px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);font-weight:500;white-space:nowrap}
+.way svg{width:22px;height:22px;color:var(--jade)}
+.section{margin-top:32px;display:grid;gap:14px}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.specs{display:grid;grid-template-columns:repeat(10,1fr);gap:10px}
+.spec.more{border-style:dashed}
+.spec.more .ic{background:var(--surface-2);color:var(--muted)}
+.morespecs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px;border:1px dashed var(--line);border-radius:var(--r);background:var(--surface)}
+.mspec{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-align:left;font-size:.9rem}
+.mspec:hover{border-color:var(--jade)}
+.mspec .c{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.spec{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);font-size:.85rem;line-height:1.4;text-align:center}
+.spec .ic{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--jade-soft);color:var(--jade)}
+.spec svg{width:26px;height:26px}
+.spec:hover{border-color:var(--jade)}
+.arts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.art{display:grid;gap:6px;align-content:start;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);text-align:left}
+.art .t{font-family:var(--f-display);font-weight:600;line-height:1.55}
+.art:hover{border-color:var(--jade)}
+@media (max-width:1000px){.specs{grid-template-columns:repeat(5,1fr)}.morespecs{grid-template-columns:repeat(3,1fr)}.arts{grid-template-columns:1fr 1fr}}
+@media (max-width:700px){.specs{grid-template-columns:repeat(2,1fr)}.morespecs{grid-template-columns:1fr}.hero,.arts{grid-template-columns:1fr}.searchrow{grid-template-columns:1fr 1fr}.searchrow .search{grid-column:1/-1}.way{padding:12px}}
+
+/* results */
+.res{display:grid;grid-template-columns:260px minmax(0,1fr);gap:24px;align-items:start}
+.rail{position:sticky;top:76px;display:grid;gap:16px}
+.fg{display:grid;gap:6px}
+.fg h3{font-size:.85rem;color:var(--muted);font-weight:600}
+.chk{display:flex;align-items:center;gap:8px;font-size:.92rem;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--jade)}
+.res-head{display:grid;gap:10px;margin-bottom:14px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;border:0;border-radius:99px;background:var(--jade-soft);color:var(--jade);padding:3px 10px;font-size:.82rem;font-weight:500}
+.chip svg{width:14px;height:14px}
+.loc{font-size:.82rem;color:var(--muted)}
+.artbox{border:1.5px solid var(--gold);background:var(--gold-soft);border-radius:var(--r);padding:12px;display:grid;gap:10px;margin-bottom:14px}
+.artbox-l{font-size:.82rem;color:var(--gold);font-weight:700}
+.list{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.artbox .list{grid-template-columns:1fr 1fr}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:8px;align-content:start;min-width:0}
+.card-top{display:flex;gap:10px;align-items:flex-start}
+.card-top>div{min-width:0;flex:1}
+.card h3 button{background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit}
+.card h3 button:hover{color:var(--jade)}
+.ptag{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-body);font-size:.75rem;font-weight:600;margin-left:8px;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold);border-radius:6px;padding:0 8px;line-height:1.7;vertical-align:3px;white-space:nowrap}
+.ptag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.dist{font-size:.85rem;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.85rem;align-items:center}
+.st{display:inline-flex;align-items:center;gap:5px;font-weight:600}
+.st i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.st.open{color:var(--open)} .st.closed{color:var(--closed)}
+.sp-list{font-size:.85rem;color:var(--muted)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.callbox{font-size:.88rem;background:var(--surface-2);border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.callbox b{font-variant-numeric:tabular-nums;user-select:all}
+.empty{padding:28px 16px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);display:grid;gap:10px;justify-items:center}
+.relarts{margin-top:24px;display:grid;gap:12px}
+.emerg-h{padding:14px 18px;border-radius:var(--r);background:var(--red-soft);color:var(--red);display:grid;gap:2px;margin-bottom:14px}
+.h24-h{padding:14px 18px;border-radius:var(--r);background:var(--teal-soft);color:var(--teal);display:grid;gap:2px;margin-bottom:14px}
+@media (max-width:900px){.res{grid-template-columns:1fr}.rail{position:static}.list,.artbox .list{grid-template-columns:1fr}}
+
+/* detail */
+.detail{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.aside{display:grid;gap:16px;position:sticky;top:76px}
+.kv{display:grid;grid-template-columns:9em 1fr;gap:6px 14px;font-size:.92rem;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;min-width:0}
+.hours{width:100%;border-collapse:collapse;font-size:.92rem;font-variant-numeric:tabular-nums}
+.hours td{padding:5px 0;border-bottom:1px solid var(--line)}
+.hours tr:last-child td{border-bottom:0}
+.hours td:last-child{text-align:right}
+.hours tr.today td{font-weight:600;color:var(--jade)}
+.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ph{aspect-ratio:4/3;max-width:100%;border-radius:10px;background:linear-gradient(135deg,var(--jade-soft),var(--surface-2));display:grid;place-items:center;color:var(--muted);font-size:.78rem}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:.82rem;padding:2px 10px;border-radius:99px;border:1px solid var(--line);background:var(--surface)}
+.lockbox{border:1px dashed var(--line);border-radius:var(--r);padding:16px;color:var(--muted);font-size:.9rem;background:var(--surface)}
+.docs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.doc{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;text-align:left;width:100%}
+.doc:hover{border-color:var(--jade)}
+.ava{width:48px;height:48px;border-radius:50%;flex:none;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;background:var(--jade-soft);color:var(--jade);font-size:1.1rem}
+.doc>div{min-width:0}
+.prose{display:grid;gap:14px;font-size:1.02rem;max-width:68ch}
+.prose h2{font-size:1.08rem;margin-top:6px}
+.prose ul{margin:0;padding-left:1.3em;display:grid;gap:4px}
+.byline{display:grid;gap:4px;padding:12px 14px;border-left:3px solid var(--jade);background:var(--surface);border-radius:0 var(--r) var(--r) 0;font-size:.9rem}
+.share{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.areas{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.area{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);text-align:left;width:100%}
+.area:hover:not(:disabled){border-color:var(--jade)}
+.area .c{font-size:.82rem;color:var(--muted);white-space:nowrap}
+.area:disabled{opacity:.5;cursor:default}
+.filterbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.opt{border:1.5px solid var(--line);background:var(--surface);border-radius:99px;padding:4px 14px;font-size:.88rem}
+.opt[aria-pressed="true"]{border-color:var(--jade);background:var(--jade-soft);color:var(--jade);font-weight:600}
+@media (max-width:900px){.detail{grid-template-columns:1fr}.aside{position:static}.areas{grid-template-columns:1fr 1fr}.docs{grid-template-columns:1fr}.photos{grid-template-columns:1fr 1fr}}
+
+/* app shell (staff / admin) */
+.shell{display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px;align-items:start}
+.side{position:sticky;top:76px;display:grid;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px}
+.side .who{padding:6px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:6px;display:grid;gap:4px}
+.side button{display:flex;align-items:center;justify-content:space-between;gap:8px;background:none;border:0;border-radius:8px;padding:8px 10px;text-align:left;font-weight:500}
+.side button.on{background:var(--jade-soft);color:var(--jade)}
+.side .cnt{font-size:.75rem;background:var(--red);color:var(--on-red);border-radius:99px;padding:0 8px}
+.side .lk{font-size:.75rem;color:var(--muted)}
+.work{display:grid;gap:18px;min-width:0}
+.work-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:2px}
+.stat b{font-family:var(--f-display);font-size:1.6rem;font-variant-numeric:tabular-nums;line-height:1.3}
+.stat.alert b{color:var(--red)}
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table.tbl{width:100%;border-collapse:collapse;font-size:.9rem;min-width:640px}
+.tbl th,.tbl td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th{font-weight:600;color:var(--muted);font-size:.8rem;background:var(--surface-2)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td .acts{flex-wrap:nowrap}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+.field{display:grid;gap:4px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label,.field .lbl{font-size:.85rem;font-weight:600}
+.field .hint{font-size:.78rem;color:var(--muted)}
+.field input[type=text],.field input[type=tel],.field input[type=number],.field input[type=date],.field select,.field textarea{width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface)}
+.field textarea{min-height:96px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--jade);outline:none}
+.req{color:var(--red);margin-left:2px}
+.checks{display:flex;flex-wrap:wrap;gap:8px 16px}
+.hrow{display:grid;grid-template-columns:7em 1fr 1fr auto;gap:8px;align-items:center;font-size:.9rem}
+.hrow input[type=text]{padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);width:100%}
+.form-acts{display:flex;gap:10px;justify-content:flex-end;grid-column:1/-1;border-top:1px solid var(--line);padding-top:14px}
+.note{font-size:.85rem;padding:10px 14px;border-radius:10px;background:var(--gold-soft);color:var(--gold)}
+.note.jade{background:var(--jade-soft);color:var(--jade)}
+.lock{display:grid;gap:10px;justify-items:start;padding:24px;border:1.5px dashed var(--gold);border-radius:var(--r);background:var(--gold-soft);color:var(--gold)}
+.lock h3{color:var(--gold)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem;word-break:break-all}
+@media (max-width:900px){.shell{grid-template-columns:1fr}.side{position:static}.stats{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr}.hrow{grid-template-columns:1fr 1fr}}
+
+.foot{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:.82rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 24px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 18px;border-radius:14px;font-size:.9rem;z-index:60;max-width:min(560px,calc(100vw - 32px));text-align:center}
+
+/* ===== Bright palette — always light (no dark mode) ===== */
+:root{color-scheme:light;
+  --bg:#F7FCFA; --surface:#FFFFFF; --surface-2:#EDF8F4; --line:#D7EAE3;
+  --fg:#16302A; --muted:#5C7169;
+  --jade:#0C8565; --jade-soft:#DCF5EC; --on-jade:#FFFFFF;
+  --teal:#1A7AA8; --teal-soft:#E1F1FA; --on-teal:#FFFFFF;
+  --red:#D63A2F; --red-soft:#FDE8E6; --on-red:#FFFFFF;
+  --gold:#B06A00; --gold-soft:#FFF3DC;
+  --open:#1E8A3E; --closed:#B4442F;
+}
+.top{background:#FFFFFF}
+.big.er{background:linear-gradient(135deg,#E5493E,#D63A2F)}
+.big.h24{background:linear-gradient(135deg,#2A90C2,#1A7AA8)}
+.spec .ic{background:var(--jade-soft)}
+.card,.panel,.art,.spec,.way{box-shadow:0 1px 2px rgba(12,133,101,.06)}
+
+.speclist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.speclist li{min-width:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -1px -1px 0}
+.speclist button{display:flex;align-items:center;gap:6px;width:100%;height:100%;background:none;border:0;padding:10px 12px;text-align:left;font-size:.98rem;line-height:1.5;color:var(--fg)}
+.speclist .nm{flex:1;min-width:0}
+.speclist .ch{color:var(--jade);font-size:1.1rem;line-height:1}
+.speclist button:hover{background:var(--jade-soft)}
+.speclist button:hover .nm{color:var(--jade)}
+.speclist button.zero .nm{color:var(--muted)}
+@media (max-width:1100px){.speclist{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:560px){.speclist{grid-template-columns:1fr}}
+
+/* filters above the list */
+.res.res-top{display:block}
+.res-top .rail{position:static;display:flex;flex-wrap:wrap;align-items:center;gap:12px 28px;margin-bottom:14px;padding:14px 18px}
+.res-top .rail .search{flex:1 1 100%}
+.res-top .fg{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.res-top .fg h3{margin:0;font-size:.85rem}
+.res-top .fg .field select{min-width:200px}
+.res-top .rail>.btn{margin-left:auto}
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <div class="top-in">
+    <button class="brand" id="homeBtn" type="button" aria-label="ទំព័រដើម">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="8" fill="currentColor"/><path d="M16 8v16M8 16h16" stroke="var(--surface)" stroke-width="4" stroke-linecap="round"/></svg>
+      <span>រកពេទ្យ</span>
+    </button>
+    <nav class="pnav" id="pnav" aria-label="ម៉ឺនុយ"></nav>
+    <div class="sp"></div>
+    <div class="role"><span>មើលជា៖</span>
+      <div class="seg" role="group" aria-label="តួនាទី">
+        <button type="button" data-role="public">អ្នកប្រើទូទៅ</button>
+        <button type="button" data-role="staff">មន្ទីរពេទ្យ</button>
+        <button type="button" data-role="admin">អ្នកគ្រប់គ្រង</button>
+      </div>
+    </div>
+    <div class="seg lang" role="group" aria-label="ភាសា / Language" data-raw><button type="button" data-lang="km">ខ្មែរ</button><button type="button" data-lang="en">EN</button></div>
+    <span class="demo-tag">ទិន្នន័យគំរូ</span>
+  </div>
+</header>
+<main class="page" id="app"></main>
+
+<script>
+(function(){
+"use strict";
+/* ================= helpers ================= */
+const KD="០១២៣៤៥៦៧៨៩";
+const km=n=>String(n).replace(/[0-9]/g,d=>KD[d]);
+const MONTHS=["មករា","កុម្ភៈ","មីនា","មេសា","ឧសភា","មិថុនា","កក្កដា","សីហា","កញ្ញា","តុលា","វិច្ឆិកា","ធ្នូ"];
+const DAYS=["ច័ន្ទ","អង្គារ","ពុធ","ព្រហស្បតិ៍","សុក្រ","សៅរ៍","អាទិត្យ"];
+const TODAY="2026-10-06";
+const kmDate=s=>{if(!s)return "—";const [y,m,d]=s.split("-").map(Number);return km(d)+" "+MONTHS[m-1]+" "+km(y)};
+const addDays=(s,n)=>{const d=new Date(s+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
+const daysBetween=(a,b)=>Math.round((new Date(b+"T00:00:00Z")-new Date(a+"T00:00:00Z"))/86400000);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const uid=p=>p+Math.random().toString(36).slice(2,8);
+function norm(s){
+  return String(s||"").normalize("NFC")
+    .replace(/[​-‍⁠﻿]/g,"")
+    .replace(/[០-៩]/g,d=>String(KD.indexOf(d)))
+    .toLowerCase().replace(/[\s.,\-_/]+/g,"");
+}
+const svg=(p,sw)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(sw||1.8)+'" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>';
+const ICON={
+ search:'<path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5"/>',
+ near:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/>',
+ area:'<path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
+ phone:'<path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/>',
+ route:'<path d="M3 11l18-8-8 18-2-8z"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',
+ sos:'<circle cx="12" cy="12" r="10"/><path d="M12 7v10M7 12h10"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+ share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>'
+};
+const SPEC_ICON={
+ general:'<path d="M6 3v6a4 4 0 0 0 8 0V3"/><path d="M10 13v3a4 4 0 0 0 8 0v-2"/><circle cx="18" cy="12" r="2"/>',
+ peds:'<circle cx="12" cy="12" r="8.5"/><circle cx="9" cy="11" r=".8" fill="currentColor"/><circle cx="15" cy="11" r=".8" fill="currentColor"/><path d="M9 15c1.6 1.4 4.4 1.4 6 0M12 3.5c-1 1.5 0 3 1.5 2.5"/>',
+ dental:'<path d="M7.5 3C5 3 4 5 4 7c0 3 1 5 2 8 .5 2 1 6 2.5 6s1.5-5 3.5-5 2 5 3.5 5S17.5 17 18 15c1-3 2-5 2-8 0-2-1-4-3.5-4-2 0-3 1-4.5 1S9.5 3 7.5 3z"/>',
+ obgyn:'<circle cx="12" cy="8.5" r="5"/><path d="M12 13.5V22M8.5 18h7"/>',
+ eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+ skin:'<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/>',
+ surgery:'<path d="M4 20l9-9"/><path d="M13 11l6-6 1.5 1.5-6 6z"/>',
+ ortho:'<path d="M7.5 4.5a2.2 2.2 0 1 0-3 3l1.5.2L16.3 18l.2 1.5a2.2 2.2 0 1 0 3-3l-1.5-.2L7.7 6z"/>',
+ ent:'<path d="M7 10a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-6 0"/><path d="M11 10a1.5 1.5 0 0 1 3 0c0 1.5-1.5 2-1.5 3"/>',
+ emergency:'<circle cx="12" cy="12" r="9"/><path d="M12 7.5v9M7.5 12h9"/>',
+ more:'<circle cx="6" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="18" cy="12" r="1.6" fill="currentColor"/>',
+ other:'<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>'
+};
+function toast(msg){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=(S.lang==="en"?tr(msg):msg);document.body.appendChild(t);setTimeout(()=>t.remove(),2000)}
+
+/* ================= masters ================= */
+const SPECS=[
+ {id:"general",km:"ជំងឺទូទៅ"},{id:"peds",km:"កុមារ"},{id:"dental",km:"ធ្មេញ"},
+ {id:"obgyn",km:"រោគស្ត្រី និងសម្ភព"},{id:"eye",km:"ភ្នែក"},{id:"skin",km:"ស្បែក"},
+ {id:"surgery",km:"វះកាត់"},{id:"ortho",km:"ឆ្អឹង"},{id:"ent",km:"ត្រចៀក ច្រមុះ បំពង់ក"},
+ {id:"emergency",km:"សង្គ្រោះបន្ទាន់"},
+ {id:"cardio",km:"បេះដូង",extra:1},{id:"gastro",km:"ក្រពះពោះវៀន",extra:1},{id:"pulmo",km:"ផ្លូវដង្ហើម",extra:1},
+ {id:"neuro",km:"សរសៃប្រសាទ",extra:1},{id:"psych",km:"សុខភាពផ្លូវចិត្ត",extra:1},{id:"uro",km:"ផ្លូវទឹកនោម",extra:1},
+ {id:"nephro",km:"តម្រងនោម",extra:1},{id:"endo",km:"ទឹកនោមផ្អែម និងអរម៉ូន",extra:1},{id:"onco",km:"មហារីក",extra:1},
+ {id:"physio",km:"ចលនាព្យាបាល",extra:1},{id:"radio",km:"រូបភាពវេជ្ជសាស្ត្រ",extra:1},{id:"lab",km:"មន្ទីរពិសោធន៍",extra:1}
+];
+const spec=id=>SPECS.find(s=>s.id===id)||{id,km:id};
+const TYPES=[
+ {id:"nat",km:"មន្ទីរពេទ្យជាតិ",pub:true},
+ {id:"ref",km:"មន្ទីរពេទ្យបង្អែក",pub:true},
+ {id:"hc",km:"មណ្ឌលសុខភាព",pub:true},
+ {id:"priv",km:"មន្ទីរពេទ្យឯកជន",pub:false},
+ {id:"clinic",km:"គ្លីនិកឯកជន",pub:false}
+];
+const typeKm=id=>(TYPES.find(t=>t.id===id)||{}).km||"";
+const PROVINCES=[
+ {id:"pp",km:"រាជធានីភ្នំពេញ"},{id:"sr",km:"ខេត្តសៀមរាប"},{id:"bb",km:"ខេត្តបាត់ដំបង"},
+ {id:"sv",km:"ខេត្តព្រះសីហនុ"},{id:"kp",km:"ខេត្តកំពត"},{id:"kc",km:"ខេត្តកំពង់ចាម"}
+];
+const KHANS=[
+ {id:"dp",km:"ដូនពេញ",sk:["ផ្សារកណ្តាល ១","វត្តភ្នំ","ស្រះចក"]},
+ {id:"cm",km:"ចំការមន",sk:["ទន្លេបាសាក់","បឹងត្របែក","ទួលទំពូង ១"]},
+ {id:"tk",km:"ទួលគោក",sk:["ទឹកល្អក់ ១","បឹងកក់ ១","ផ្សារដេប៉ូ ១"]},
+ {id:"7m",km:"៧មករា",sk:["មនោរម្យ","វាលវង់","អូរឫស្សី ១"]},
+ {id:"bkk",km:"បឹងកេងកង",sk:["បឹងកេងកង ១","បឹងកេងកង ២","ទួលស្វាយព្រៃ ១"]},
+ {id:"mc",km:"មានជ័យ",sk:["ស្ទឹងមានជ័យ ១","ចាក់អង្រែលើ"]},
+ {id:"ss",km:"សែនសុខ",sk:["ទឹកថ្លា","ភ្នំពេញថ្មី"]},
+ {id:"rk",km:"ឫស្សីកែវ",sk:["ឫស្សីកែវ","ទួលសង្កែ ១"]},
+ {id:"ca",km:"ច្បារអំពៅ",sk:["ច្បារអំពៅ ១","និរោធ"]},
+ {id:"ps",km:"ពោធិ៍សែនជ័យ",sk:[]},{id:"dk",km:"ដង្កោ",sk:[]},
+ {id:"cc",km:"ជ្រោយចង្វារ",sk:[]},{id:"pn",km:"ព្រែកព្នៅ",sk:[]},{id:"kb",km:"កំបូល",sk:[]}
+];
+const khan=id=>KHANS.find(k=>k.id===id)||{km:""};
+const ATYPE={notice:"សេចក្តីជូនដំណឹង",health:"អត្ថបទសុខភាព",service:"សេវា និងឧបករណ៍ថ្មី",event:"ព្រឹត្តិការណ៍ និងប្រូម៉ូសិន",jobs:"ការជ្រើសរើសបុគ្គលិក"};
+const ANUM={notice:"③",health:"④",service:"⑤",event:"⑥",jobs:"⑦"};
+const ME={lat:11.5564,lng:104.9282,label:"វិមានឯករាជ្យ"};
+
+/* ================= sample data (fictional) ================= */
+const W=(a,b,c)=>({h24:false,g:[a,b,c]}); // [Mon–Fri],[Sat],[Sun]
+const ALLDAY={h24:true,g:[[],[],[]]};
+const DB={
+ hospitals:[
+  {id:"metta",km:"មន្ទីរពេទ្យមេត្តា",en:"Metta Hospital",type:"priv",khan:"tk",sk:"ទឹកល្អក់ ១",vil:"ភូមិ ៣",street:"ផ្លូវលេខ ២៧១",lat:11.5795,lng:104.8995,phone:"023 900 101",hours:ALLDAY,specs:["emergency","general","peds","surgery","ortho","cardio","radio","lab"],sym:["គ្រុនក្តៅ","ឈឺពោះ","របួស","ឆ្អឹងបាក់","ឈឺក្បាល"],nssf:true,tg:"@metta_demo",fb:"facebook.com/metta.demo",web:"metta-demo.example",photos:4,msg:"យើងបើកសង្គ្រោះបន្ទាន់ ២៤ម៉ោង រៀងរាល់ថ្ងៃ។ សូមទូរស័ព្ទមកយើងភ្លាម ពេលមានករណីបន្ទាន់។",plan:"paid",until:"2027-03-31",status:"approved",route:"self",handover:"done",sales:"សុភា",memo:"",verify:"ទូរស័ព្ទ · 2026-09-02"},
+  {id:"smile",km:"គ្លីនិកធ្មេញញញឹម",en:"Smile Dental Clinic",type:"clinic",khan:"bkk",sk:"បឹងកេងកង ១",vil:"ភូមិ ១",street:"ផ្លូវលេខ ៣៥៧",lat:11.5530,lng:104.9215,phone:"023 900 102",hours:W([["08:00","12:00"],["14:00","19:00"]],[["08:00","12:00"]],[]),specs:["dental"],sym:["ឈឺធ្មេញ","ហើមអញ្ចាញធ្មេញ"],nssf:false,tg:"@smile_demo",fb:"",web:"",photos:2,msg:"សូមណាត់ជួបតាមតេឡេក្រាម ដើម្បីកុំឱ្យរង់ចាំយូរ។",plan:"free",until:"",status:"approved",route:"self",handover:"done",sales:"",memo:"",verify:"ទូរស័ព្ទ · 2026-09-05"},
+  {id:"lotus",km:"មន្ទីរពេទ្យកុមារផ្កាឈូក",en:"Lotus Children's Hospital",type:"priv",khan:"cm",sk:"ទន្លេបាសាក់",vil:"ភូមិ ២",street:"មហាវិថីព្រះនរោត្តម",lat:11.5440,lng:104.9300,phone:"023 900 103",hours:ALLDAY,specs:["peds","emergency"],sym:["គ្រុនក្តៅ","ក្អក","រាគ","ក្អួត"],nssf:true,tg:"@lotus_demo",fb:"facebook.com/lotus.demo",web:"",photos:3,msg:"យើងព្យាបាលកុមារ ចាប់ពីទារកទើបកើត ដល់អាយុ ១៥ឆ្នាំ។",plan:"paid",until:"2027-01-31",status:"approved",route:"proxy",handover:"done",sales:"ដារ៉ា",memo:"",verify:"ចុះទៅដល់កន្លែង · 2026-08-20"},
+  {id:"chantrea",km:"គ្លីនិកសុខភាពស្ត្រី ចន្ទ្រា",en:"Chantrea Women's Clinic",type:"clinic",khan:"dp",sk:"ផ្សារកណ្តាល ១",vil:"ភូមិ ៤",street:"ផ្លូវលេខ ១៣",lat:11.5710,lng:104.9240,phone:"023 900 104",hours:W([["07:30","11:30"],["14:00","17:30"]],[["07:30","11:30"]],[]),specs:["obgyn"],sym:["ពិនិត្យផ្ទៃពោះ","ឈឺពោះ"],nssf:false,tg:"@chantrea_demo",fb:"",web:"",photos:2,msg:"យើងរីករាយជួយស្ត្រី និងម្តាយគ្រប់ដំណាក់កាល។",plan:"paid",until:"2026-12-31",status:"approved",route:"self",handover:"done",sales:"សុភា",memo:"",verify:"ទូរស័ព្ទ · 2026-09-10"},
+  {id:"arun",km:"មន្ទីរពេទ្យបង្អែកអរុណរះ",en:"Arunreah Referral Hospital",type:"ref",khan:"mc",sk:"ស្ទឹងមានជ័យ ១",vil:"ភូមិ ១",street:"ផ្លូវជាតិលេខ ១",lat:11.5205,lng:104.9310,phone:"023 900 105",hours:ALLDAY,specs:["emergency","general","obgyn","peds","surgery","lab"],sym:["គ្រុនក្តៅ","របួស","ពិនិត្យផ្ទៃពោះ","រាគ"],nssf:true,tg:"",fb:"facebook.com/arun.demo",web:"",photos:1,msg:"ទទួលអ្នកជំងឺ ប.ស.ស និងមូលនិធិសមធម៌។",plan:"free",until:"",status:"approved",route:"proxy",handover:"done",sales:"ដារ៉ា",memo:"",verify:"ចុះទៅដល់កន្លែង · 2026-08-25"},
+  {id:"ponleu",km:"គ្លីនិកភ្នែកពន្លឺ",en:"Ponleu Eye Clinic",type:"clinic",khan:"7m",sk:"មនោរម្យ",vil:"ភូមិ ២",street:"ផ្លូវលេខ ១៨២",lat:11.5650,lng:104.9105,phone:"023 900 106",hours:W([["08:00","17:00"]],[["08:00","12:00"]],[]),specs:["eye"],sym:["ឈឺភ្នែក","ភ្នែកស្រវាំង"],nssf:false,tg:"@ponleu_demo",fb:"",web:"",photos:1,msg:"",plan:"free",until:"",status:"approved",route:"proxy",handover:"pending",invited:"2026-09-30",sales:"សុភា",memo:"បានផ្ញើតំណតាមតេឡេក្រាម",verify:"ចុះទៅដល់កន្លែង · 2026-09-30"},
+  {id:"reaksmey",km:"មណ្ឌលសុខភាពរស្មី",en:"Reaksmey Health Center",type:"hc",khan:"ss",sk:"ទឹកថ្លា",vil:"ភូមិ ៥",street:"ផ្លូវលេខ ១៩៨៦",lat:11.6010,lng:104.8790,phone:"023 900 107",hours:W([["07:00","11:30"],["14:00","17:00"]],[],[]),specs:["general","obgyn","peds"],sym:["គ្រុនក្តៅ","ក្អក","ពិនិត្យផ្ទៃពោះ"],nssf:true,tg:"",fb:"",web:"",photos:1,msg:"ចាក់វ៉ាក់សាំងកុមារ រៀងរាល់ថ្ងៃពុធ។",plan:"free",until:"",status:"approved",route:"self",handover:"done",sales:"",memo:"",verify:"ទូរស័ព្ទ · 2026-09-12"},
+  {id:"sovann",km:"គ្លីនិកស្បែកសុវណ្ណ",en:"Sovann Skin Clinic",type:"clinic",khan:"bkk",sk:"ទួលស្វាយព្រៃ ១",vil:"ភូមិ ៣",street:"ផ្លូវលេខ ៥១",lat:11.5555,lng:104.9180,phone:"023 900 108",hours:W([["09:00","12:00"],["15:00","20:00"]],[["09:00","20:00"]],[["09:00","12:00"]]),specs:["skin"],sym:["រមាស់ស្បែក","មុនលើមុខ"],nssf:false,tg:"@sovann_demo",fb:"",web:"",photos:2,msg:"",plan:"free",until:"",status:"approved",route:"self",handover:"done",sales:"",memo:"",verify:"ទូរស័ព្ទ · 2026-09-14"},
+  {id:"sokhsan",km:"មន្ទីរពេទ្យសុខសាន្ត",en:"Sokh San Hospital",type:"priv",khan:"rk",sk:"ទួលសង្កែ ១",vil:"ភូមិ ២",street:"ផ្លូវជាតិលេខ ៥",lat:11.6105,lng:104.9050,phone:"023 900 109",hours:ALLDAY,specs:["emergency","general","surgery","ortho","ent","physio","radio"],sym:["របួស","ឆ្អឹងបាក់","ឈឺត្រចៀក","ឈឺបំពង់ក"],nssf:true,tg:"@sokhsan_demo",fb:"facebook.com/sokhsan.demo",web:"sokhsan-demo.example",photos:4,msg:"ឯកទេសរបួសចរាចរណ៍ និងឆ្អឹង។",plan:"paid",until:"2027-06-30",status:"approved",route:"self",handover:"done",sales:"ដារ៉ា",memo:"",verify:"ចុះទៅដល់កន្លែង · 2026-09-01"},
+  {id:"kdey",km:"គ្លីនិកកុមារ ក្តីស្រឡាញ់",en:"Kdey Sralanh Kids Clinic",type:"clinic",khan:"ca",sk:"និរោធ",vil:"ភូមិ ១",street:"ផ្លូវជាតិលេខ ១",lat:11.5350,lng:104.9520,phone:"023 900 110",hours:ALLDAY,specs:["peds","ent"],sym:["គ្រុនក្តៅ","ក្អក","ឈឺត្រចៀក"],nssf:false,tg:"@kdey_demo",fb:"",web:"",photos:1,msg:"",plan:"free",until:"",status:"approved",route:"proxy",handover:"pending",invited:"2026-09-20",sales:"ដារ៉ា",memo:"មិនទាន់ឆ្លើយតប",verify:"ចុះទៅដល់កន្លែង · 2026-09-20"},
+  {id:"thmey",km:"គ្លីនិកសុខភាពភូមិថ្មី",en:"Phum Thmey Health Clinic",type:"clinic",khan:"ss",sk:"ភ្នំពេញថ្មី",vil:"ភូមិ ៦",street:"ផ្លូវលេខ ៥៩៨",lat:11.5950,lng:104.8920,phone:"023 900 111",hours:W([["07:00","19:00"]],[["07:00","12:00"]],[]),specs:["general"],sym:["គ្រុនក្តៅ","ឈឺក្បាល"],nssf:false,tg:"",fb:"",web:"",photos:1,msg:"",plan:"free",until:"",status:"pending",route:"self",handover:"done",applied:"2026-10-05",sales:"",memo:"",verify:""}
+ ],
+ clinicPages:{
+  metta:{intro:"មន្ទីរពេទ្យមេត្តា ជាមន្ទីរពេទ្យឯកជននៅខណ្ឌទួលគោក ដែលបើកសង្គ្រោះបន្ទាន់ ២៤ម៉ោង។",feat:"វេជ្ជបណ្ឌិតប្រចាំការ ២៤ម៉ោង\nបន្ទប់វះកាត់ ២\nម៉ាស៊ីនស្កេន CT និងមន្ទីរពិសោធន៍",access:"នៅជិតផ្សារទឹកល្អក់ មានកន្លែងចតឡាន និងម៉ូតូ។",upd:"2026-09-20"},
+  lotus:{intro:"មន្ទីរពេទ្យឯកទេសកុមារ បើក ២៤ម៉ោង សម្រាប់ទារក និងកុមារ។",feat:"បន្ទប់ទារកទើបកើត\nកន្លែងលេងសម្រាប់កុមារ\nចាក់វ៉ាក់សាំងគ្រប់ប្រភេទ",access:"នៅលើមហាវិថីព្រះនរោត្តម ជិតវិមានឯករាជ្យ។",upd:"2026-09-18"},
+  chantrea:{intro:"គ្លីនិកសុខភាពស្ត្រី ផ្តល់សេវាពិនិត្យផ្ទៃពោះ និងសុខភាពស្ត្រី។",feat:"ម៉ាស៊ីនអេកូ ៤D\nវេជ្ជបណ្ឌិតស្ត្រី",access:"នៅជិតផ្សារកណ្តាល។",upd:"2026-09-10"},
+  sokhsan:{intro:"មន្ទីរពេទ្យឯកជន បើក ២៤ម៉ោង ឯកទេសឆ្អឹង និងរបួសចរាចរណ៍។",feat:"វេជ្ជបណ្ឌិតឯកទេសឆ្អឹង\nកាំរស្មីអ៊ិច ២៤ម៉ោង\nបន្ទប់ព្យាបាលដោយចលនា",access:"នៅលើផ្លូវជាតិលេខ ៥ ខណ្ឌឫស្សីកែវ។",upd:"2026-09-05"}
+ },
+ doctors:[
+  {id:"d1",km:"វេជ្ជបណ្ឌិត សុខ ចាន់ធី",ini:"ច",spec:"peds",hosp:["lotus"],deg:"វេជ្ជបណ្ឌិតឯកទេសកុមារ",career:"ធ្វើការផ្នែកកុមារ និងទារកទើបកើត។",years:12,consent:true},
+  {id:"d2",km:"វេជ្ជបណ្ឌិត ហេង វិចិត្រ",ini:"វ",spec:"ortho",hosp:["sokhsan","metta"],deg:"វេជ្ជបណ្ឌិតឯកទេសឆ្អឹង",career:"ឯកទេសវះកាត់ឆ្អឹង និងរបួសកីឡា។",years:15,consent:true},
+  {id:"d4",km:"វេជ្ជបណ្ឌិត លឹម ដារ៉ា",ini:"ដ",spec:"general",hosp:["metta"],deg:"វេជ្ជបណ្ឌិតជំងឺទូទៅ",career:"ទទួលបន្ទុកផ្នែកសង្គ្រោះបន្ទាន់ និងជំងឺឆ្លង។",years:9,consent:true},
+  {id:"d7",km:"វេជ្ជបណ្ឌិត ចាន់ សុវណ្ណ",ini:"ណ",spec:"surgery",hosp:["metta"],deg:"វេជ្ជបណ្ឌិតឯកទេសវះកាត់",career:"វះកាត់ពោះ និងវះកាត់បន្ទាន់។",years:14,consent:true},
+ {id:"d8",km:"វេជ្ជបណ្ឌិត ពៅ ម៉ាលីស",ini:"ស",spec:"peds",hosp:["metta"],deg:"វេជ្ជបណ្ឌិតឯកទេសកុមារ",career:"ថែទាំកុមារ និងចាក់វ៉ាក់សាំង។",years:7,consent:true},
+ {id:"d9",km:"វេជ្ជបណ្ឌិត សេង រតនា",ini:"ន",spec:"cardio",hosp:["metta"],deg:"វេជ្ជបណ្ឌិតឯកទេសបេះដូង",career:"ពិនិត្យ និងព្យាបាលជំងឺបេះដូង និងសម្ពាធឈាម។",years:10,consent:true},
+ {id:"d5",km:"វេជ្ជបណ្ឌិត ឈិន ស្រីនិច",ini:"ន",spec:"obgyn",hosp:["chantrea"],deg:"វេជ្ជបណ្ឌិតឯកទេសរោគស្ត្រី និងសម្ភព",career:"តាមដានផ្ទៃពោះ និងសម្រាលកូន។",years:11,consent:true}
+ ],
+ articles:[
+  {id:"a1",type:"health",hosp:"lotus",title:"ជំងឺគ្រុនឈាម៖ សញ្ញា និងពេលណាត្រូវទៅពេទ្យ",author:"d1",specs:["peds","general"],status:"published",date:"2026-09-28",
+   body:"គ្រុនឈាមកើតពីមូសខ្លាដំបៅ ហើយកើតច្រើនក្នុងរដូវវស្សា។\n## សញ្ញាទូទៅ\n- គ្រុនក្តៅខ្លាំងភ្លាមៗ\n- ឈឺក្បាល និងឈឺក្រោយគ្រាប់ភ្នែក\n- ឈឺសាច់ដុំ និងសន្លាក់\n## ត្រូវទៅមន្ទីរពេទ្យភ្លាម ប្រសិនបើ\n- ឈឺពោះខ្លាំង\n- ក្អួតញឹកញាប់\n- ហូរឈាមច្រមុះ ឬអញ្ចាញធ្មេញ\nកុំលេបថ្នាំអាស្ពីរីន ឬអ៊ីប៊ុយប្រូហ្វែន ដោយខ្លួនឯង។ សូមពិគ្រោះវេជ្ជបណ្ឌិតជាមុន។"},
+  {id:"a2",type:"notice",hosp:"metta",title:"ម៉ោងធ្វើការក្នុងថ្ងៃបុណ្យភ្ជុំបិណ្ឌ",author:"",specs:["general"],status:"published",date:"2026-10-01",
+   body:"ផ្នែកពិគ្រោះជំងឺធម្មតា នឹងឈប់សម្រាក ៣ថ្ងៃ ក្នុងឱកាសបុណ្យភ្ជុំបិណ្ឌ។\nផ្នែកសង្គ្រោះបន្ទាន់ នៅតែបើក ២៤ម៉ោង ដូចធម្មតា។"},
+  {id:"a3",type:"service",hosp:"metta",title:"ម៉ាស៊ីនស្កេន CT ថ្មី ដំណើរការ ២៤ម៉ោង",author:"d4",specs:["emergency","general"],status:"published",date:"2026-09-15",
+   body:"មន្ទីរពេទ្យមេត្តា បានដាក់ឱ្យប្រើម៉ាស៊ីនស្កេន CT ថ្មី សម្រាប់ករណីបន្ទាន់ ដូចជារបួសក្បាល និងឈឺពោះខ្លាំង។"},
+  {id:"a7",type:"health",hosp:"metta",title:"សម្ពាធឈាមខ្ពស់៖ ពិនិត្យជាប្រចាំ",author:"d9",specs:["cardio","general"],status:"published",date:"2026-09-25",
+   body:"សម្ពាធឈាមខ្ពស់ច្រើនតែគ្មានសញ្ញា។ សូមវាស់សម្ពាធឈាមយ៉ាងហោចណាស់ម្តងក្នុងមួយឆ្នាំ។"},
+ {id:"a8",type:"jobs",hosp:"metta",title:"ជ្រើសរើសអ្នកបច្ចេកទេសមន្ទីរពិសោធន៍",author:"",specs:["lab"],status:"published",date:"2026-09-18",
+   body:"មន្ទីរពេទ្យមេត្តា ត្រូវការអ្នកបច្ចេកទេសមន្ទីរពិសោធន៍ ១នាក់។"},
+ {id:"a9",type:"notice",hosp:"metta",title:"បើកផ្នែកបេះដូងថ្មី រៀងរាល់ថ្ងៃពុធ ដល់ថ្ងៃសៅរ៍",author:"d9",specs:["cardio"],status:"published",date:"2026-09-08",
+   body:"ចាប់ពីខែកញ្ញា មន្ទីរពេទ្យមេត្តា បើកផ្នែកបេះដូង រៀងរាល់ថ្ងៃពុធ ដល់ថ្ងៃសៅរ៍។"},
+ {id:"a4",type:"jobs",hosp:"sokhsan",title:"ជ្រើសរើសគិលានុបដ្ឋាយិកា ២នាក់",author:"",specs:["general"],status:"published",date:"2026-09-22",
+   body:"មន្ទីរពេទ្យសុខសាន្ត ត្រូវការគិលានុបដ្ឋាយិកា ២នាក់ សម្រាប់ផ្នែកសង្គ្រោះបន្ទាន់។\n- មានសញ្ញាបត្រគិលានុបដ្ឋាក\n- អាចធ្វើការវេនយប់បាន"},
+  {id:"a5",type:"event",hosp:"chantrea",title:"ពិនិត្យផ្ទៃពោះដោយឥតគិតថ្លៃ រៀងរាល់ថ្ងៃសៅរ៍ដំបូងនៃខែ",author:"d5",specs:["obgyn"],status:"published",date:"2026-09-12",
+   body:"គ្លីនិកចន្ទ្រា ផ្តល់ការពិនិត្យផ្ទៃពោះលើកដំបូងដោយឥតគិតថ្លៃ រៀងរាល់ថ្ងៃសៅរ៍ដំបូងនៃខែ។ សូមណាត់ជួបជាមុន។"},
+  {id:"a6",type:"health",hosp:"sokhsan",title:"ពេលណាដែលការឈឺខ្នង ត្រូវទៅជួបវេជ្ជបណ្ឌិត?",author:"d2",specs:["ortho"],status:"draft",date:"2026-10-04",
+   body:"សេចក្តីព្រាង"}
+ ],
+ synonyms:[
+  {canon:"គ្រុនក្តៅ",vars:["ក្តៅខ្លួន","គ្រុន","fever"]},
+  {canon:"ឈឺធ្មេញ",vars:["ធ្មេញឈឺ","toothache"]},
+  {canon:"ឈឺពោះ",vars:["ចុកពោះ","stomachache"]},
+  {canon:"រាគ",vars:["រាករូស","diarrhea"]},
+  {canon:"ក្អក",vars:["cough"]},
+  {canon:"របួស",vars:["ត្រូវរបួស","injury"]}
+ ],
+ templates:{
+  clinic:{intro:"[ឈ្មោះមន្ទីរពេទ្យ] ជា[ប្រភេទ]នៅខណ្ឌ[ខណ្ឌ] ដែលផ្តល់សេវា[សេវាសំខាន់]។",feat:"[ចំណុចពិសេសទី ១]\n[ចំណុចពិសេសទី ២]\n[បរិក្ខារសំខាន់]",access:"[ទីសម្គាល់ជិតខាង] · [កន្លែងចតឡាន ឬម៉ូតូ]"},
+  doctor:{deg:"វេជ្ជបណ្ឌិតឯកទេស[ផ្នែក]",career:"[ឆ្នាំ] បម្រើការនៅ[កន្លែង]។ ឯកទេសលើ[ជំងឺ ឬការព្យាបាល]។"}
+ },
+ changes:[
+  {id:"c1",hosp:"sovann",field:"ឈ្មោះ",from:"គ្លីនិកស្បែកសុវណ្ណ",to:"គ្លីនិកស្បែក និងសម្ផស្សសុវណ្ណ",date:"2026-10-04"}
+ ],
+ claims:[
+  {id:"o1",hosp:"arun",who:"លោក ស៊ាង វណ្ណា",phone:"012 000 333",date:"2026-10-03"}
+ ]
+};
+const H=id=>DB.hospitals.find(h=>h.id===id);
+const D=id=>DB.doctors.find(d=>d.id===id);
+const A=id=>DB.articles.find(a=>a.id===id);
+const live=()=>DB.hospitals.filter(h=>h.status==="approved");
+const isPaid=h=>h&&h.plan==="paid";
+const pubArts=()=>DB.articles.filter(a=>a.status==="published"&&isPaid(H(a.hosp)));
+const isPub=h=>(TYPES.find(t=>t.id===h.type)||{}).pub;
+
+/* ================= time & distance ================= */
+function nowPP(){const d=new Date();const p=new Date(d.getTime()+d.getTimezoneOffset()*60000+7*3600000);return {day:(p.getDay()+6)%7,min:p.getHours()*60+p.getMinutes()}}
+const toMin=t=>{const [h,m]=t.split(":").map(Number);return h*60+m};
+const grp=day=>day<5?0:day===5?1:2;
+function isOpen(h){if(h.hours.h24)return true;const n=nowPP();return (h.hours.g[grp(n.day)]||[]).some(([a,b])=>n.min>=toMin(a)&&n.min<toMin(b))}
+function hoursLine(h,day){if(h.hours.h24)return "២៤ម៉ោង";const r=h.hours.g[grp(day)]||[];return r.length?r.map(([a,b])=>km(a)+"–"+km(b)).join(", "):"បិទ"}
+function dist(a,b){const R=6371,r=x=>x*Math.PI/180;const dLa=r(b.lat-a.lat),dLo=r(b.lng-a.lng);const s=Math.sin(dLa/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(s))}
+const fmtKm=d=>km(d.toFixed(1))+" គ.ម";
+const mapsDir=h=>"https://www.google.com/maps/dir/?api=1&destination="+h.lat+","+h.lng;
+const mapsPin=h=>"https://www.google.com/maps/search/?api=1&query="+h.lat+","+h.lng;
+
+/* ================= search ================= */
+function canonSym(text){
+  const t=norm(text);if(!t)return null;
+  for(const e of DB.synonyms){
+    if(norm(e.canon)===t||e.vars.some(v=>norm(v)===t))return e.canon;
+  }
+  for(const e of DB.synonyms){
+    if(norm(e.canon).includes(t)||t.includes(norm(e.canon))||e.vars.some(v=>{const n=norm(v);return n.length>1&&(t.includes(n)||n.includes(t))}))return e.canon;
+  }
+  return null;
+}
+function symMatch(h,t){
+  if(!t)return false;
+  const c=canonSym(t);
+  return h.sym.some(s=>{const n=norm(s);return n.includes(t)||t.includes(n)||(c&&norm(c)===n)});
+}
+function nameMatch(h,t){return !!t&&(norm(h.km).includes(t)||norm(h.en).includes(t))}
+function allSymptoms(){const s=new Set();live().forEach(h=>h.sym.forEach(x=>s.add(x)));return Array.from(s)}
+function search(p){
+  const t=norm(p.q||"");const F=p.f||{};
+  let rows=live().map(h=>{let score=1;if(t){score=(nameMatch(h,t)?10:0)+(symMatch(h,t)?6:0)}return {h,d:dist(ME,h),score}});
+  if(t)rows=rows.filter(r=>r.score>0);
+  if(p.mode==="er")rows=rows.filter(r=>r.h.specs.includes("emergency"));
+  if(p.mode==="h24")rows=rows.filter(r=>r.h.hours.h24);
+  if(p.spec)rows=rows.filter(r=>r.h.specs.includes(p.spec));
+  if(p.khan)rows=rows.filter(r=>r.h.khan===p.khan);
+  if(p.sk)rows=rows.filter(r=>r.h.sk===p.sk);
+  if(F.open)rows=rows.filter(r=>isOpen(r.h));
+  if(F.h24)rows=rows.filter(r=>r.h.hours.h24);
+  if(F.spec)rows=rows.filter(r=>r.h.specs.includes(F.spec));
+  if(F.own)rows=rows.filter(r=>F.own==="pub"?isPub(r.h):!isPub(r.h));
+  if(F.type)rows=rows.filter(r=>r.h.type===F.type);
+  if(F.nssf)rows=rows.filter(r=>r.h.nssf);
+  const sort=(p.mode==="er"||p.mode==="h24"||p.mode==="near")?"near":(p.sort||(t?"rel":"near"));
+  rows.sort(sort==="near"?(a,b)=>a.d-b.d:(a,b)=>b.score-a.score||a.d-b.d);
+  rows.sort((a,b)=>(isPaid(b.h)?1:0)-(isPaid(a.h)?1:0)); /* partner hospitals first (stable) */
+  return {rows,sort,t};
+}
+
+/* ================= state & routing ================= */
+const S={lang:"km",role:"public",pub:{view:"home",p:{}},stack:[],staff:{hid:null,view:"login",p:{}},admin:{view:"overview",p:{}}};
+function go(view,p,replace){if(!replace)S.stack.push(S.pub);S.pub={view,p:p||{}};render();window.scrollTo(0,0)}
+function setPub(p){S.pub={view:S.pub.view,p:Object.assign({},S.pub.p,p)};render()}
+function back(){S.pub=S.stack.pop()||{view:"home",p:{}};render();window.scrollTo(0,0)}
+let HEADER_HTML=null;
+function render(){
+  if(HEADER_HTML===null)HEADER_HTML=$("#top").innerHTML;else $("#top").innerHTML=HEADER_HTML;
+  $$(".role .seg button").forEach(b=>b.classList.toggle("on",b.dataset.role===S.role));
+  const nav=$("#pnav");
+  if(S.role==="public"){
+    const v=S.pub.view;
+    nav.innerHTML=[["home","ទំព័រដើម"],["doctors","វេជ្ជបណ្ឌិត"],["articles","អត្ថបទ"]].map(([k,l])=>'<button type="button" data-nav="'+k+'" class="'+(v===k?"on":"")+'">'+l+'</button>').join("");
+    $("#app").innerHTML=(PV[v]||PV.home)(S.pub.p);
+  }else if(S.role==="staff"){
+    nav.innerHTML="";$("#app").innerHTML=staffView();
+  }else{
+    nav.innerHTML="";$("#app").innerHTML=adminView();
+  }
+  afterRender();
+}
+
+/* ================= public pieces ================= */
+function searchBox(val,id){
+  return '<div class="search">'+svg(ICON.search,2)+'<input id="'+(id||"q")+'" type="search" autocomplete="off" aria-label="ស្វែងរក" placeholder="ឈ្មោះមន្ទីរពេទ្យ ឬរោគសញ្ញា" value="'+esc(val||"")+'"><div class="ac" hidden></div></div>';
+}
+function statusHtml(h){
+  if(h.hours.h24)return '<span class="st open"><i></i>បើក ២៤ម៉ោង</span>';
+  return isOpen(h)?'<span class="st open"><i></i>កំពុងបើក</span>':'<span class="st closed"><i></i>បិទ</span>';
+}
+function card(r){
+  const h=r.h;
+  return '<article class="card">'+
+   '<div class="card-top"><div><h3>'+esc(h.km)+''+(isPaid(h)?'<span class="ptag">មន្ទីរពេទ្យដៃគូ</span>':'')+'</h3></div><span class="dist">'+fmtKm(r.d)+'</span></div>'+
+   '<div class="meta">'+statusHtml(h)+'<span class="muted">'+typeKm(h.type)+'</span><span class="muted">ខណ្ឌ'+khan(h.khan).km+'</span>'+(h.nssf?'<span class="muted">ប.ស.ស</span>':'')+'</div>'+
+   '<div class="sp-list">'+h.specs.slice(0,4).map(s=>spec(s).km).join(" · ")+'</div>'+
+   '<div class="acts"><button class="btn pri sm" type="button" data-call="'+h.id+'">'+svg(ICON.phone)+'ហៅទូរស័ព្ទ</button><a class="btn sm" href="'+mapsDir(h)+'" target="_blank" rel="noopener">'+svg(ICON.route)+'ផ្លូវទៅ</a><button class="btn sm" type="button" data-go="hospital" data-id="'+h.id+'">មើលលំអិត</button>'+(isPaid(h)?'<button class="btn sm" type="button" data-go="articles" data-hosp="'+h.id+'">អានអត្ថបទ</button>':'')+'</div>'+
+   '<div class="callbox" data-cb="'+h.id+'" hidden><span>ទូរស័ព្ទ៖ <b>'+h.phone+'</b></span><button class="link" type="button" data-copy="'+h.phone+'">ចម្លង</button></div>'+
+  '</article>';
+}
+function artRow(a){
+  const h=H(a.hosp);
+  return '<button class="art" type="button" data-go="article" data-id="'+a.id+'"><span class="t">'+('<span data-raw>'+esc(a.title)+'</span>')+'</span><span class="small muted">'+esc(h.km)+' · '+kmDate(a.date)+'</span></button>';
+}
+const backLink=()=>'<div class="crumbs"><button type="button" data-back>‹ ត្រឡប់ក្រោយ</button></div>';
+function renderBody(txt){
+  const out=[];let ul=null;
+  txt.split("\n").forEach(l=>{
+    if(l.startsWith("- ")){if(!ul){ul=[];}ul.push('<li>'+esc(l.slice(2))+'</li>');return}
+    if(ul){out.push('<ul>'+ul.join("")+'</ul>');ul=null}
+    if(l.startsWith("## "))out.push('<h2>'+esc(l.slice(3))+'</h2>');
+    else if(l.trim())out.push('<p>'+esc(l)+'</p>');
+  });
+  if(ul)out.push('<ul>'+ul.join("")+'</ul>');
+  return out.join("");
+}
+
+/* ================= public views ================= */
+const PV={};
+PV.home=()=>{
+  const latest=pubArts().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+  return '<section class="hero">'+
+    '<button class="big er" type="button" data-go="results" data-mode="er">'+svg(ICON.sos,2)+'<span><b>មន្ទីរពេទ្យសង្គ្រោះបន្ទាន់ ២៤ម៉ោង</b><small>មន្ទីរពេទ្យដែលមានផ្នែកសង្គ្រោះបន្ទាន់ ជិតអ្នកបំផុត</small></span></button>'+
+    '<button class="big h24" type="button" data-go="results" data-mode="h24">'+svg(ICON.clock,2)+'<span><b>មន្ទីរពេទ្យបើក ២៤ម៉ោង</b><small>មន្ទីរពេទ្យ និងគ្លីនិកដែលបើកពេញមួយថ្ងៃមួយយប់</small></span></button>'+
+  '</section>'+
+  '<div class="searchrow">'+searchBox("")+
+    '<button class="way" type="button" data-go="results" data-mode="near">'+svg(ICON.near)+'នៅជិតខ្ញុំ</button>'+
+    '<button class="way" type="button" data-go="area">'+svg(ICON.area)+'ស្វែងរកតាមតំបន់</button></div>'+
+  '<section class="section"><h2>ស្វែងរកតាមផ្នែក</h2><ul class="speclist">'+
+    SPECS.filter(s=>s.id!=="emergency").map(s=>{const c=live().filter(h=>h.specs.includes(s.id)).length;return '<li><button type="button" data-go="results" data-spec="'+s.id+'" '+(c?'':'class="zero"')+'><span class="nm">'+s.km+'</span><span class="ch" aria-hidden="true">›</span></button></li>'}).join("")+
+  '</ul></section>'+'<footer class="foot"><span>សម្រាប់មន្ទីរពេទ្យ និងគ្លីនិក៖ ចុះឈ្មោះដោយឥតគិតថ្លៃ</span><span>ទិន្នន័យទាំងអស់នៅលើទំព័រនេះ ជាទិន្នន័យគំរូសម្រាប់សាកល្បង</span></footer>';
+};
+PV.results=p=>{
+  const r=search(p);const F=p.f||{};
+  const mode=p.mode;
+  let head='';
+  if(mode==="er")head='<div class="emerg-h"><h1>មន្ទីរពេទ្យសង្គ្រោះបន្ទាន់ ២៤ម៉ោង</h1><span class="small">មន្ទីរពេទ្យដែលមានផ្នែកសង្គ្រោះបន្ទាន់ · តម្រៀបតាមចម្ងាយ</span></div>';
+  else if(mode==="h24")head='<div class="h24-h"><h1>មន្ទីរពេទ្យបើក ២៤ម៉ោង</h1><span class="small">តម្រៀបតាមចម្ងាយ</span></div>';
+  else{
+    const parts=[];
+    if(p.spec)parts.push("ផ្នែក"+spec(p.spec).km);
+    if(p.sk)parts.push("សង្កាត់"+p.sk);else if(p.khan)parts.push("ខណ្ឌ"+khan(p.khan).km);
+    let t=parts.join(" · ");
+    if(p.q)t='លទ្ធផលសម្រាប់ «'+esc(p.q)+'»';
+    if(mode==="near")t="នៅជិតខ្ញុំ";
+    head='<h1>'+(t||"មន្ទីរពេទ្យ និងគ្លីនិកទាំងអស់")+'</h1>';
+  }
+  const chips=[];
+  if(p.spec)chips.push(['spec',"ផ្នែក"+spec(p.spec).km]);
+  if(p.khan)chips.push(['khan',"ខណ្ឌ"+khan(p.khan).km]);
+  if(p.sk)chips.push(['sk',"សង្កាត់"+p.sk]);
+  if(p.q)chips.push(['q','«'+p.q+'»']);
+  const FL={open:"កំពុងបើក",h24:"បើក ២៤ម៉ោង",nssf:"ទទួល ប.ស.ស"};
+  Object.keys(F).forEach(k=>{if(!F[k])return;let l=FL[k];if(k==="own")l=F[k]==="pub"?"រដ្ឋ":"ឯកជន";if(k==="type")l=typeKm(F[k]);if(k==="spec")l="ផ្នែក"+spec(F[k]).km;chips.push(['f:'+k,l])});
+  const box=mode!=="er"?r.rows.filter(x=>isPaid(x.h)).slice(0,2):[];
+  const rail='<section class="rail panel" aria-label="តម្រង">'+
+    (mode?'':searchBox(p.q||"","q2"))+
+    '<div class="fg"><h3>ស្ថានភាព</h3><label class="chk"><input type="checkbox" data-f="open" '+(F.open?"checked":"")+'>កំពុងបើក</label><label class="chk"><input type="checkbox" data-f="h24" '+(F.h24?"checked":"")+'>បើក ២៤ម៉ោង</label></div>'+
+    '<div class="fg"><h3>ផ្នែក</h3><div class="field"><select data-fs="spec" aria-label="ផ្នែក"><option value="">ទាំងអស់</option>'+SPECS.map(s=>'<option value="'+s.id+'" '+(F.spec===s.id?"selected":"")+'>'+s.km+'</option>').join("")+'</select></div></div>'+
+    '<div class="fg"><h3>ប្រភេទ</h3><label class="chk"><input type="radio" name="ftype" data-fr="type" value="" '+(!F.type?"checked":"")+'>ទាំងអស់</label>'+TYPES.map(t=>'<label class="chk"><input type="radio" name="ftype" data-fr="type" value="'+t.id+'" '+(F.type===t.id?"checked":"")+'>'+t.km+'</label>').join("")+'</div>'+
+    '<div class="fg"><h3>ធានារ៉ាប់រង</h3><label class="chk"><input type="checkbox" data-f="nssf" '+(F.nssf?"checked":"")+'>ទទួល ប.ស.ស</label></div>'+
+    (Object.values(F).some(Boolean)?'<button class="btn sm" type="button" data-rm="f:all">សម្អាតតម្រងទាំងអស់</button>':'')+
+  '</section>';
+  let main='<div class="res-head">'+head+
+    '<div class="loc">ប្រើទីតាំងគំរូ៖ '+ME.label+' · '+km(r.rows.length)+' កន្លែង</div>'+
+    (mode?'':'<div class="toolbar"><span class="small muted">តម្រៀប៖</span><div class="seg" role="group" aria-label="តម្រៀប"><button type="button" data-sort="near" class="'+(r.sort==="near"?"on":"")+'">ជិតបំផុត</button><button type="button" data-sort="rel" class="'+(r.sort==="rel"?"on":"")+'">ពាក់ព័ន្ធបំផុត</button></div></div>')+
+    (chips.length?'<div class="chips">'+chips.map(c=>'<button class="chip" type="button" data-rm="'+c[0]+'">'+esc(c[1])+svg(ICON.x,2.4)+'</button>').join("")+'</div>':'')+
+  '</div>';
+  main+='<!--RAIL-->';
+  if(!r.rows.length){
+    main+='<div class="empty"><h3>រកមិនឃើញលទ្ធផល</h3><p class="small muted">សាកល្បងពង្រីកតំបន់ ឬដកតម្រងចេញ</p><div class="acts">'+(p.sk?'<button class="btn" type="button" data-rm="sk">ពង្រីកទៅខណ្ឌទាំងមូល</button>':(p.khan?'<button class="btn" type="button" data-rm="khan">ស្វែងរកគ្រប់ខណ្ឌ</button>':''))+(Object.values(F).some(Boolean)?'<button class="btn" type="button" data-rm="f:all">ដកតម្រងចេញ</button>':'')+'</div></div>';
+  }else{
+    main+='<div class="list">'+r.rows.map(card).join("")+'</div>';
+    if(p.q||p.spec){
+      const ids=new Set(r.rows.map(x=>x.h.id));
+      const specSet=new Set(r.rows.flatMap(x=>x.h.specs));
+      const rel=pubArts().filter(a=>ids.has(a.hosp)&&a.specs.some(s=>specSet.has(s))).slice(0,3);
+      if(rel.length)main+='<section class="relarts"><h2>អត្ថបទពាក់ព័ន្ធ</h2><div class="arts">'+rel.map(artRow).join("")+'</div></section>';
+    }
+  }
+  return '<div class="res res-top">'+main.replace('<!--RAIL-->',rail)+'</div>';
+};
+PV.area=p=>{
+  if(!p.prov){
+    return '<h1>ស្វែងរកតាមតំបន់</h1><p class="muted" style="margin:4px 0 16px">ជ្រើសរើសខេត្ត ឬរាជធានី</p><div class="areas">'+PROVINCES.map(pr=>{const c=pr.id==="pp"?live().length:0;return '<button class="area" type="button" data-go="area" data-prov="'+pr.id+'" '+(c?'':'disabled')+'><span>'+pr.km+'</span><span class="c">'+(c?km(c)+' កន្លែង':'មិនទាន់មាន')+'</span></button>'}).join("")+'</div>';
+  }
+  if(!p.khan){
+    const cnt=k=>live().filter(h=>h.khan===k).length;
+    return '<div class="crumbs"><button type="button" data-go="area">ខេត្ត/រាជធានី</button><span>›</span><span>រាជធានីភ្នំពេញ</span></div><h1>ជ្រើសរើសខណ្ឌ</h1><div class="areas" style="margin-top:14px">'+
+     KHANS.slice().sort((a,b)=>cnt(b.id)-cnt(a.id)).map(k=>{const c=cnt(k.id);return '<button class="area" type="button" data-go="area" data-prov="pp" data-khan="'+k.id+'" '+(c?'':'disabled')+'><span>ខណ្ឌ'+k.km+'</span><span class="c">'+(c?km(c)+' កន្លែង':'មិនទាន់មាន')+'</span></button>'}).join("")+'</div>';
+  }
+  const k=khan(p.khan);const cnt=s=>live().filter(h=>h.khan===k.id&&h.sk===s).length;
+  return '<div class="crumbs"><button type="button" data-go="area">ខេត្ត/រាជធានី</button><span>›</span><button type="button" data-go="area" data-prov="pp">រាជធានីភ្នំពេញ</button><span>›</span><span>ខណ្ឌ'+k.km+'</span></div><h1>ជ្រើសរើសសង្កាត់</h1><div class="areas" style="margin-top:14px">'+
+   '<button class="area" type="button" data-go="results" data-khan="'+k.id+'"><span><b>គ្រប់សង្កាត់ក្នុងខណ្ឌ'+k.km+'</b></span><span class="c">'+km(live().filter(h=>h.khan===k.id).length)+' កន្លែង</span></button>'+
+   k.sk.map(s=>{const c=cnt(s);return '<button class="area" type="button" data-go="results" data-khan="'+k.id+'" data-sk="'+esc(s)+'" '+(c?'':'disabled')+'><span>សង្កាត់'+esc(s)+'</span><span class="c">'+(c?km(c)+' កន្លែង':'មិនទាន់មាន')+'</span></button>'}).join("")+'</div>';
+};
+PV.hospital=p=>{
+  const h=H(p.id);if(!h)return '<p>រកមិនឃើញ</p>';
+  const n=nowPP();const paid=isPaid(h);
+  const docs=paid?DB.doctors.filter(d=>d.hosp.includes(h.id)):[];
+  const arts=paid?pubArts().filter(a=>a.hosp===h.id).sort((a,b)=>b.date.localeCompare(a.date)):[];
+  const cp=paid?DB.clinicPages[h.id]:null;
+  const main='<div class="panel">'+
+     '<h1>'+esc(h.km)+(paid?'<span class="ptag">មន្ទីរពេទ្យដៃគូ</span>':'')+'</h1><div class="meta"><span class="muted">'+fmtKm(dist(ME,h))+' ពី'+ME.label+'</span></div>'+
+     (h.msg?'<div class="byline"><b>សារទៅកាន់អ្នកជំងឺ</b><span>'+('<span data-raw>'+esc(h.msg)+'</span>')+'</span></div>':'')+
+     '<div class="photos">'+Array.from({length:Math.min(h.photos,4)},(_,i)=>'<div class="ph">រូបថត '+km(i+1)+'</div>').join("")+'</div>'+
+   '</div>'+
+   '<section class="section" style="margin-top:20px"><h2>ផ្នែកព្យាបាល</h2><div class="tags">'+h.specs.map(s=>'<button class="tag" type="button" data-go="results" data-spec="'+s+'">ផ្នែក'+spec(s).km+'</button>').join("")+'</div></section>'+
+   '<section class="section" style="margin-top:20px"><h2>រោគសញ្ញាដែលទទួលព្យាបាល</h2><div class="tags">'+h.sym.map(s=>'<span class="tag">'+esc(s)+'</span>').join("")+'</div></section>'+
+   (paid?
+     '<section class="section" id="sec-clinic"><div class="sec-h"><h2>ណែនាំគ្លីនិក</h2>'+(cp?'<button class="link" type="button" data-go="clinic" data-id="'+h.id+'">អានទាំងអស់ ›</button>':'')+'</div>'+(cp?'<div class="panel"><p>'+('<span data-raw>'+esc(cp.intro)+'</span>')+'</p></div>':'<p class="muted small">មិនទាន់មាន</p>')+'</section>'+
+     '<section class="section"><h2>វេជ្ជបណ្ឌិត</h2>'+(docs.length?'<div class="docs">'+docs.slice(0,DOC_MAX).map(d=>docBtn(d)).join("")+'</div>'+(docs.length>DOC_MAX?'<div><button class="btn" type="button" data-go="doctors" data-hosp="'+h.id+'">មើលបន្ថែម ('+km(docs.length)+') ›</button></div>':''):'<p class="muted small">មិនទាន់មាន</p>')+'</section>'+
+     '<section class="section" id="sec-arts"><h2>អត្ថបទ</h2>'+(arts.length?'<div class="arts" style="grid-template-columns:repeat(2,minmax(0,1fr))">'+arts.slice(0,ART_MAX).map(artRow).join("")+'</div>'+(arts.length>ART_MAX?'<div><button class="btn" type="button" data-go="articles" data-hosp="'+h.id+'">មើលបន្ថែម ('+km(arts.length)+') ›</button></div>':''):'<p class="muted small">មិនទាន់មាន</p>')+'</section>'
+   :'');
+  const aside='<aside class="aside">'+
+    '<div class="panel">'+
+    '<dl class="kv"><dt>ប្រភេទ</dt><dd>'+typeKm(h.type)+'</dd><dt>ប.ស.ស</dt><dd>'+(h.nssf?'ទទួល':'មិនទទួល')+'</dd><dt>អាសយដ្ឋាន</dt><dd>'+esc(h.street)+' '+esc(h.vil)+' សង្កាត់'+esc(h.sk)+' ខណ្ឌ'+khan(h.khan).km+' រាជធានីភ្នំពេញ</dd><dt>ទូរស័ព្ទ</dt><dd class="num">'+h.phone+'</dd>'+(h.tg?'<dt>តេឡេក្រាម</dt><dd>'+esc(h.tg)+'</dd>':'')+(h.fb?'<dt>ហ្វេសប៊ុក</dt><dd>'+esc(h.fb)+'</dd>':'')+(h.web?'<dt>គេហទំព័រ</dt><dd>'+esc(h.web)+'</dd>':'')+'</dl>'+
+    '<div class="acts"><button class="btn pri" type="button" data-call="'+h.id+'">'+svg(ICON.phone)+'ហៅទូរស័ព្ទ</button><a class="btn" href="'+mapsDir(h)+'" target="_blank" rel="noopener">'+svg(ICON.route)+'ផ្លូវទៅ</a>'+(paid?'<button class="btn" type="button" data-go="articles" data-hosp="'+h.id+'">អានអត្ថបទ</button>':'')+'</div><div class="callbox" data-cb="'+h.id+'" hidden><span>ទូរស័ព្ទ៖ <b>'+h.phone+'</b></span><button class="link" type="button" data-copy="'+h.phone+'">ចម្លង</button></div>'+'</div>'+
+    '<div class="panel"><h3>ម៉ោងពិនិត្យ</h3>'+(h.hours.h24?'<p><b>បើក ២៤ម៉ោង រៀងរាល់ថ្ងៃ</b></p>':'<table class="hours"><tbody>'+DAYS.map((d,i)=>'<tr class="'+(i===n.day?"today":"")+'"><td>'+d+(i===n.day?' (ថ្ងៃនេះ)':'')+'</td><td>'+hoursLine(h,i)+'</td></tr>').join("")+'</tbody></table>')+'</div>'+
+  '</aside>';
+  return backLink()+'<div class="detail"><div>'+main+'</div>'+aside+'</div>';
+};
+const DOC_MAX=4,ART_MAX=4;
+function docBtn(d){return '<button class="doc" type="button" data-go="doctor" data-id="'+d.id+'"><span class="ava">'+d.ini+'</span><div><h3>'+esc(d.km)+'</h3><span class="small muted">ផ្នែក'+spec(d.spec).km+'</span></div></button>'}
+PV.clinic=p=>{
+  const h=H(p.id);const cp=DB.clinicPages[p.id];
+  if(!cp||!isPaid(h))return backLink()+'<p>មិនទាន់មាន</p>';
+  return backLink()+'<div class="panel" style="max-width:820px"><div class="prose"><span><span class="badge">① ណែនាំគ្លីនិក</span></span><h1>'+esc(h.km)+'</h1><p>'+('<span data-raw>'+esc(cp.intro)+'</span>')+'</p><h2>ចំណុចពិសេស</h2><ul>'+cp.feat.split("\n").filter(Boolean).map(x=>'<li data-raw>'+esc(x)+'</li>').join("")+'</ul><h2>ការធ្វើដំណើរ</h2><p>'+('<span data-raw>'+esc(cp.access)+'</span>')+'</p><p class="small muted">កែប្រែចុងក្រោយ '+kmDate(cp.upd)+'</p></div>'+
+   '</div>';
+};
+PV.doctors=p=>{
+  const f=p.spec||"",hh=p.hosp?H(p.hosp):null;
+  const base=DB.doctors.filter(d=>d.consent&&d.hosp.some(id=>isPaid(H(id))&&H(id).status==="approved")).filter(d=>!hh||d.hosp.includes(hh.id));
+  const list=base.filter(d=>!f||d.spec===f);
+  const used=Array.from(new Set(base.map(d=>d.spec)));
+  return (hh?backLink()+'<h1>វេជ្ជបណ្ឌិតនៅ'+esc(hh.km)+'</h1>':'<h1>វេជ្ជបណ្ឌិត</h1>')+'<div class="filterbar" style="margin-top:12px"><button class="opt" type="button" data-dspec="" aria-pressed="'+(!f)+'">ទាំងអស់</button>'+used.map(s=>'<button class="opt" type="button" data-dspec="'+s+'" aria-pressed="'+(f===s)+'">ផ្នែក'+spec(s).km+'</button>').join("")+'</div>'+
+   (list.length?'<div class="docs" style="grid-template-columns:repeat(3,1fr)">'+list.map(docBtn).join("")+'</div>':'<div class="empty">មិនទាន់មាន</div>');
+};
+PV.doctor=p=>{
+  const d=D(p.id);if(!d)return backLink()+'<p>រកមិនឃើញ</p>';
+  const arts=pubArts().filter(a=>a.author===d.id);
+  return backLink()+'<div class="detail"><div class="work">'+
+   '<div class="panel" style="grid-template-columns:auto 1fr;align-items:center;gap:16px"><span class="ava" style="width:72px;height:72px;font-size:1.6rem">'+d.ini+'</span><div><h1>'+esc(d.km)+'</h1><span class="muted">ផ្នែក'+spec(d.spec).km+'</span></div></div>'+
+   '<div class="panel"><dl class="kv"><dt>ជំនាញ</dt><dd>ផ្នែក'+spec(d.spec).km+'</dd><dt>សញ្ញាបត្រ</dt><dd>'+('<span data-raw>'+esc(d.deg)+'</span>')+'</dd><dt>ប្រវត្តិការងារ</dt><dd>'+('<span data-raw>'+esc(d.career)+'</span>')+'</dd><dt>បទពិសោធន៍</dt><dd>'+km(d.years)+' ឆ្នាំ</dd></dl></div>'+
+   (arts.length?'<section class="section" style="margin-top:0"><h2>អត្ថបទដែលបានសរសេរ</h2><div class="arts" style="grid-template-columns:1fr 1fr">'+arts.map(artRow).join("")+'</div></section>':'')+
+  '</div><aside class="aside"><h3>ពិនិត្យនៅ</h3>'+d.hosp.filter(id=>H(id).status==="approved").map(id=>card({h:H(id),d:dist(ME,H(id))})).join("")+'</aside></div>';
+};
+PV.articles=p=>{
+  const f=p.spec||"",t=p.type||"",hh=p.hosp?H(p.hosp):null;
+  const all=pubArts().filter(a=>!hh||a.hosp===hh.id).sort((a,b)=>b.date.localeCompare(a.date));
+  const list=all.filter(a=>(!f||a.specs.includes(f))&&(!t||a.type===t));
+  const usedS=Array.from(new Set(all.flatMap(a=>a.specs)));
+  return (hh?backLink()+'<h1>អត្ថបទរបស់'+esc(hh.km)+' <span class="ptag">មន្ទីរពេទ្យដៃគូ</span></h1>':'<h1>អត្ថបទ</h1>')+
+   '<div class="filterbar" style="margin-top:12px"><span class="small muted" style="align-self:center">ផ្នែក៖</span><button class="opt" type="button" data-aspec="" aria-pressed="'+(!f)+'">ទាំងអស់</button>'+usedS.map(s=>'<button class="opt" type="button" data-aspec="'+s+'" aria-pressed="'+(f===s)+'">'+spec(s).km+'</button>').join("")+'</div>'+
+   '<div class="filterbar"><span class="small muted" style="align-self:center">ប្រភេទ៖</span><button class="opt" type="button" data-atype="" aria-pressed="'+(!t)+'">ទាំងអស់</button>'+Object.keys(ATYPE).map(k=>'<button class="opt" type="button" data-atype="'+k+'" aria-pressed="'+(t===k)+'">'+ANUM[k]+' '+ATYPE[k]+'</button>').join("")+'</div>'+
+   (list.length?'<div class="arts">'+list.map(artRow).join("")+'</div>':'<div class="empty">មិនទាន់មានអត្ថបទ</div>');
+};
+PV.article=p=>{
+  const a=A(p.id);if(!a)return backLink()+'<p>រកមិនឃើញ</p>';
+  const h=H(a.hosp);const au=a.author?D(a.author):null;
+  const url=encodeURIComponent("https://rokpet.example/article/"+a.id);
+  return backLink()+'<article class="panel" style="max-width:820px"><div class="prose">'+
+   '<h1>'+('<span data-raw>'+esc(a.title)+'</span>')+'</h1><span class="small muted">ចុះផ្សាយ '+kmDate(a.date)+'</span>'+
+   '<div class="byline">'+(au?'<span>សរសេរដោយ <button class="link" type="button" data-go="doctor" data-id="'+au.id+'">'+esc(au.km)+'</button> · ផ្នែក'+spec(au.spec).km+'</span>':'')+'<span>ចុះផ្សាយដោយ <button class="link" type="button" data-go="hospital" data-id="'+h.id+'">'+esc(h.km)+'</button></span></div>'+
+   '<div data-raw style="display:grid;gap:14px">'+renderBody(a.body)+'</div>'+
+   '<div class="share"><span class="small muted">'+svg(ICON.share).replace('<svg','<svg style="width:16px;height:16px;vertical-align:-3px"')+' ចែករំលែក៖</span><a class="btn sm" href="https://www.facebook.com/sharer/sharer.php?u='+url+'" target="_blank" rel="noopener">Facebook</a><a class="btn sm" href="https://t.me/share/url?url='+url+'" target="_blank" rel="noopener">Telegram</a></div>'+
+  '</div></article>';
+};
+
+/* ================= form helpers ================= */
+const fld=(label,input,o)=>{o=o||{};return '<div class="field'+(o.full?' full':'')+'"><label'+(o.for?' for="'+o.for+'"':'')+'>'+label+(o.req?'<span class="req">*</span>':'')+'</label>'+input+(o.hint?'<span class="hint">'+o.hint+'</span>':'')+'</div>'};
+const inp=(id,val,type,extra)=>'<input id="'+id+'" name="'+id+'" type="'+(type||"text")+'" value="'+esc(val)+'" '+(extra||"")+'>';
+const sel=(id,opts,val)=>'<select id="'+id+'" name="'+id+'">'+opts.map(([v,l])=>'<option value="'+esc(v)+'" '+(String(v)===String(val)?"selected":"")+'>'+esc(l)+'</option>').join("")+'</select>';
+const ta=(id,val,rows)=>'<textarea id="'+id+'" name="'+id+'" rows="'+(rows||4)+'">'+esc(val)+'</textarea>';
+const specChecks=(name,vals)=>'<div class="checks">'+SPECS.map(s=>'<label class="chk"><input type="checkbox" name="'+name+'" value="'+s.id+'" '+(vals.includes(s.id)?"checked":"")+'>'+s.km+'</label>').join("")+'</div>';
+const khanOpts=()=>KHANS.map(k=>[k.id,"ខណ្ឌ"+k.km]);
+const fv=(f,n)=>{const el=f.elements[n];return el?el.value.trim():""};
+const fchk=(f,n)=>Array.from(f.querySelectorAll('input[name="'+n+'"]:checked')).map(x=>x.value);
+const planBadge=h=>isPaid(h)?'<span class="badge jade">គម្រោងបង់ប្រាក់</span>':'<span class="badge">គម្រោងឥតគិតថ្លៃ</span>';
+const statusBadge=s=>s==="published"?'<span class="badge jade">បានផ្សព្វផ្សាយ</span>':s==="draft"?'<span class="badge">សេចក្តីព្រាង</span>':s==="hiddenplan"?'<span class="badge gold">លាក់ (ផុតគម្រោង)</span>':'<span class="badge red">បានលាក់</span>';
+function lockBox(what){return '<div class="lock">'+svg(ICON.lock,2).replace('<svg','<svg style="width:28px;height:28px"')+'<h3>'+what+' សម្រាប់តែគម្រោងបង់ប្រាក់</h3><p class="small">គម្រោងឥតគិតថ្លៃ អាចចុះ និងកែព័ត៌មានមូលដ្ឋានរបស់មន្ទីរពេទ្យបានតែប៉ុណ្ណោះ។ ដំឡើងទៅគម្រោងបង់ប្រាក់ ដើម្បីបង្ហោះអត្ថបទ ទំព័រណែនាំគ្លីនិក និងវេជ្ជបណ្ឌិត។</p><button class="btn" type="button" data-upgrade>ស្នើសុំដំឡើងគម្រោង</button></div>'}
+function hoursEditor(h){
+  const g=h?h.hours.g:[[["08:00","17:00"]],[["08:00","12:00"]],[]];
+  const row=(i,l)=>{const r=(g[i]||[])[0];return '<div class="hrow"><span>'+l+'</span><input type="text" name="ho'+i+'" value="'+(r?r[0]:"")+'" placeholder="08:00" aria-label="'+l+' បើក"><input type="text" name="hc'+i+'" value="'+(r?r[1]:"")+'" placeholder="17:00" aria-label="'+l+' បិទ"><label class="chk small"><input type="checkbox" name="hx'+i+'" '+(r?"":"checked")+'>បិទ</label></div>'};
+  return '<div class="field full"><span class="lbl">ម៉ោងពិនិត្យ<span class="req">*</span></span><label class="chk"><input type="checkbox" name="h24" '+(h&&h.hours.h24?"checked":"")+'>បើក ២៤ម៉ោង រៀងរាល់ថ្ងៃ</label>'+row(0,"ច័ន្ទ – សុក្រ")+row(1,"សៅរ៍")+row(2,"អាទិត្យ")+'<span class="hint">បើបើក ២៤ម៉ោង មិនចាំបាច់បំពេញម៉ោងខាងលើទេ</span></div>';
+}
+function readHours(f){
+  if(f.elements.h24.checked)return {h24:true,g:[[],[],[]]};
+  const g=[0,1,2].map(i=>{if(f.elements["hx"+i].checked)return [];const o=fv(f,"ho"+i),c=fv(f,"hc"+i);return o&&c?[[o,c]]:[]});
+  return {h24:false,g};
+}
+function infoForm(h,idp){
+  h=h||{};idp=idp||"i";
+  return fld("ឈ្មោះមន្ទីរពេទ្យ (ខ្មែរ)",inp(idp+"_km",h.km||"","text","required"),{req:1,for:idp+"_km"})+
+   fld("ឈ្មោះជាអក្សរឡាតាំង",inp(idp+"_en",h.en||""),{for:idp+"_en",hint:"សម្រាប់តែការស្វែងរកប៉ុណ្ណោះ មិនបង្ហាញលើគេហទំព័រ"})+
+   fld("ប្រភេទ",sel(idp+"_type",TYPES.map(t=>[t.id,t.km]),h.type||"clinic"),{req:1,for:idp+"_type",hint:"រដ្ឋ ឬឯកជន កំណត់តាមប្រភេទដោយស្វ័យប្រវត្តិ"})+
+   fld("ទូរស័ព្ទ",inp(idp+"_phone",h.phone||"","tel","required"),{req:1,for:idp+"_phone",hint:"រក្សាទុកជាទម្រង់ +855"})+
+   fld("ខណ្ឌ / ស្រុក",sel(idp+"_khan",khanOpts(),h.khan||"tk"),{req:1,for:idp+"_khan",hint:"រាជធានីភ្នំពេញ"})+
+   fld("សង្កាត់ / ឃុំ",inp(idp+"_sk",h.sk||""),{req:1,for:idp+"_sk"})+
+   fld("ភូមិ",inp(idp+"_vil",h.vil||""),{req:1,for:idp+"_vil"})+
+   fld("ផ្លូវ / ផ្ទះលេខ",inp(idp+"_street",h.street||""),{req:1,for:idp+"_street"})+
+   hoursEditor(h.hours?h:null)+
+   fld("ផ្នែក",specChecks(idp+"_specs",h.specs||[]),{req:1,full:1,hint:"ជ្រើស «សង្គ្រោះបន្ទាន់» ដើម្បីបង្ហាញក្នុងប៊ូតុងសង្គ្រោះបន្ទាន់ ២៤ម៉ោង"})+
+   fld("រោគសញ្ញាដែលទទួលព្យាបាល",inp(idp+"_sym",(h.sym||[]).join(", ")),{req:1,full:1,for:idp+"_sym",hint:"បំបែកដោយសញ្ញាក្បៀស ( , ) ឧ. គ្រុនក្តៅ, ឈឺធ្មេញ, របួស"})+
+   fld("ទីតាំង (Google Maps)",inp(idp+"_loc",h.lat?(h.lat+", "+h.lng):""),{req:1,for:idp+"_loc",hint:"ចម្លងរយៈទទឹង និងរយៈបណ្តោយពី Google Maps"})+
+   fld("ទទួល ប.ស.ស",'<label class="chk"><input type="checkbox" name="'+idp+'_nssf" '+(h.nssf?"checked":"")+'>ទទួល</label>',{req:1})+
+   fld("តេឡេក្រាម",inp(idp+"_tg",h.tg||""),{req:1,for:idp+"_tg"})+
+   fld("ហ្វេសប៊ុក",inp(idp+"_fb",h.fb||""),{req:1,for:idp+"_fb"})+
+   fld("គេហទំព័រ",inp(idp+"_web",h.web||""),{req:1,for:idp+"_web"})+
+   fld("ចំនួនរូបថត",inp(idp+"_photos",h.photos||1,"number",'min="1" max="20"'),{req:1,for:idp+"_photos",hint:"រូបខាងក្រៅ និងខាងក្នុង · ចំនួនអតិបរមា មិនទាន់កំណត់"})+
+   fld("សារទៅកាន់អ្នកជំងឺ",ta(idp+"_msg",h.msg||"",3),{req:1,full:1,for:idp+"_msg"});
+}
+function readInfo(f,idp){
+  const loc=fv(f,idp+"_loc").split(",").map(Number);
+  return {km:fv(f,idp+"_km"),en:fv(f,idp+"_en"),type:fv(f,idp+"_type"),phone:fv(f,idp+"_phone"),khan:fv(f,idp+"_khan"),sk:fv(f,idp+"_sk"),vil:fv(f,idp+"_vil"),street:fv(f,idp+"_street"),
+    hours:readHours(f),specs:fchk(f,idp+"_specs"),sym:fv(f,idp+"_sym").split(/[,،]/).map(s=>s.trim()).filter(Boolean),
+    lat:isFinite(loc[0])&&loc[0]?loc[0]:11.56,lng:isFinite(loc[1])&&loc[1]?loc[1]:104.92,nssf:f.elements[idp+"_nssf"].checked,
+    tg:fv(f,idp+"_tg"),fb:fv(f,idp+"_fb"),web:fv(f,idp+"_web"),photos:Number(fv(f,idp+"_photos"))||1,msg:fv(f,idp+"_msg")};
+}
+
+/* ================= hospital staff ================= */
+function staffView(){
+  const st=S.staff;
+  if(!st.hid&&st.view!=="register"){
+    const demo=["metta","smile","thmey"].map(id=>H(id));
+    return '<div style="max-width:560px;margin:24px auto" class="panel"><h1>ចូលប្រើសម្រាប់មន្ទីរពេទ្យ</h1><p class="muted">ចូលដោយលេខទូរស័ព្ទ និងលេខកូដ SMS (OTP)</p>'+
+     '<div class="form" style="grid-template-columns:1fr">'+fld("លេខទូរស័ព្ទ",inp("lg_phone","","tel",'placeholder="012 345 678"'),{for:"lg_phone"})+'<button class="btn pri" type="button" data-otp>ផ្ញើលេខកូដ</button></div>'+
+     '<div class="note">ជំនាន់សាកល្បង៖ ជ្រើសគណនីខាងក្រោម</div><div style="display:grid;gap:8px">'+
+     demo.map(h=>'<button class="doc" type="button" data-login="'+h.id+'"><span class="ava">'+esc(h.km.slice(0,1))+'</span><div><h3>'+esc(h.km)+'</h3><span class="small muted">'+(h.status==="pending"?'<span class="badge gold">រង់ចាំការអនុម័ត</span>':planBadge(h))+'</span></div></button>').join("")+'</div>'+
+     '<button class="btn ghost" type="button" data-sv="register">+ ចុះឈ្មោះមន្ទីរពេទ្យថ្មី</button></div>';
+  }
+  if(st.view==="register")return '<div style="max-width:900px;margin:0 auto" class="work"><div class="work-h"><h1>ចុះឈ្មោះមន្ទីរពេទ្យថ្មី</h1><button class="btn" type="button" data-sv="login">បោះបង់</button></div><div class="note jade">ចុះឈ្មោះដោយឥតគិតថ្លៃ។ បន្ទាប់ពីអ្នកគ្រប់គ្រងពិនិត្យ និងអនុម័ត ព័ត៌មាននឹងបង្ហាញលើគេហទំព័រ។</div><form id="f-reg" class="panel form">'+infoForm(null,"r")+'<div class="form-acts"><button class="btn pri" type="submit">ដាក់ពាក្យស្នើសុំ</button></div></form></div>';
+  const h=H(st.hid);const paid=isPaid(h);
+  const nav=[["dash","ផ្ទាំងដើម"],["info","ព័ត៌មានមូលដ្ឋាន"],["clinic","① ណែនាំគ្លីនិក"],["doctors","② វេជ្ជបណ្ឌិត"],["articles","③–⑦ អត្ថបទ"]];
+  const side='<nav class="side" aria-label="ម៉ឺនុយមន្ទីរពេទ្យ"><div class="who"><b>'+esc(h.km)+'</b>'+(h.status==="pending"?'<span class="badge gold">រង់ចាំការអនុម័ត</span>':planBadge(h))+'</div>'+
+    nav.map(([k,l])=>'<button type="button" data-sv="'+k+'" class="'+(st.view===k?"on":"")+'"><span>'+l+'</span>'+(!paid&&["clinic","doctors","articles"].includes(k)?'<span class="lk">'+svg(ICON.lock).replace('<svg','<svg style="width:14px;height:14px"')+'</span>':'')+'</button>').join("")+
+    '<button type="button" data-logout><span class="muted">ចាកចេញ</span></button></nav>';
+  return '<div class="shell">'+side+'<div class="work">'+(STV[st.view]||STV.dash)(h,st.p)+'</div></div>';
+}
+const STV={};
+STV.dash=h=>{
+  const arts=DB.articles.filter(a=>a.hosp===h.id);
+  const docs=DB.doctors.filter(d=>d.hosp.includes(h.id));
+  const chg=DB.changes.filter(c=>c.hosp===h.id);
+  return '<div class="work-h"><h1>ផ្ទាំងដើម</h1></div>'+
+   (h.status==="pending"?'<div class="note">ពាក្យស្នើសុំរបស់អ្នក កំពុងរង់ចាំការពិនិត្យពីអ្នកគ្រប់គ្រង (ដាក់ថ្ងៃ '+kmDate(h.applied)+')។ យើងនឹងជូនដំណឹងតាមតេឡេក្រាម។</div>':'')+
+   (h.status==="returned"?'<div class="note">ពាក្យស្នើសុំត្រូវបានប្រគល់ឱ្យកែវិញ៖ '+esc(h.reason||"")+'</div>':'')+
+   '<div class="stats"><div class="stat"><span class="small muted">គម្រោង</span><b style="font-size:1.1rem">'+(isPaid(h)?"បង់ប្រាក់":"ឥតគិតថ្លៃ")+'</b>'+(h.until?'<span class="small muted">ដល់ '+kmDate(h.until)+'</span>':'')+'</div>'+
+   '<div class="stat"><span class="small muted">អត្ថបទបានផ្សព្វផ្សាយ</span><b>'+km(arts.filter(a=>a.status==="published").length)+'</b></div>'+
+   '<div class="stat"><span class="small muted">សេចក្តីព្រាង</span><b>'+km(arts.filter(a=>a.status==="draft").length)+'</b></div>'+
+   '<div class="stat"><span class="small muted">វេជ្ជបណ្ឌិត</span><b>'+km(docs.length)+'</b></div></div>'+
+   (chg.length?'<div class="panel"><h3>ការកែប្រែដែលកំពុងរង់ចាំ</h3>'+chg.map(c=>'<p class="small">'+esc(c.field)+'៖ '+('<span data-raw>'+esc(c.from)+'</span>')+' → <b>'+('<span data-raw>'+esc(c.to)+'</span>')+'</b> <span class="badge gold">រង់ចាំ</span></p>').join("")+'</div>':'')+
+   (isPaid(h)?'<div class="panel"><div class="sec-h"><h3>អត្ថបទចុងក្រោយ</h3><button class="link" type="button" data-sv="articles">គ្រប់គ្រងអត្ថបទ ›</button></div>'+(arts.length?arts.slice(0,4).map(a=>'<p>'+statusBadge(a.status)+' '+('<span data-raw>'+esc(a.title)+'</span>')+' <span class="small muted">'+kmDate(a.date)+'</span></p>').join(""):'<p class="muted">មិនទាន់មាន</p>')+'</div>':lockBox("ការបង្ហោះអត្ថបទ"));
+};
+STV.info=h=>'<div class="work-h"><h1>ព័ត៌មានមូលដ្ឋាន</h1></div><div class="note">ការកែ ឈ្មោះ ឬអាសយដ្ឋាន ត្រូវរង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ ព័ត៌មានផ្សេងទៀតបង្ហាញភ្លាមៗ។</div><form id="f-info" class="panel form">'+infoForm(h,"i")+'<div class="form-acts"><button class="btn pri" type="submit">រក្សាទុក</button></div></form>';
+STV.clinic=h=>{
+  if(!isPaid(h))return '<h1>① ណែនាំគ្លីនិក</h1>'+lockBox("ទំព័រណែនាំគ្លីនិក");
+  const cp=DB.clinicPages[h.id]||{intro:"",feat:"",access:""};
+  return '<div class="work-h"><h1>① ណែនាំគ្លីនិក</h1><button class="btn" type="button" data-tpl="clinic">ប្រើទំព័រគំរូ</button></div><p class="muted small">ទំព័រថេរ មួយទំព័រក្នុងមួយមន្ទីរពេទ្យ។ បំពេញតាមទំព័រគំរូ។</p>'+
+   '<form id="f-clinic" class="panel form">'+fld("សេចក្តីផ្តើម",ta("c_intro",cp.intro,3),{full:1,req:1,for:"c_intro"})+fld("ចំណុចពិសេស និងបរិក្ខារ",ta("c_feat",cp.feat,4),{full:1,for:"c_feat",hint:"មួយបន្ទាត់ សម្រាប់មួយចំណុច"})+fld("ការធ្វើដំណើរ",ta("c_access",cp.access,2),{full:1,for:"c_access"})+
+   '<div class="form-acts">'+(cp.upd?'<span class="small muted" style="margin-right:auto">កែប្រែចុងក្រោយ '+kmDate(cp.upd)+'</span>':'')+'<button class="btn pri" type="submit">រក្សាទុក និងផ្សព្វផ្សាយ</button></div></form>';
+};
+STV.doctors=(h,p)=>{
+  if(!isPaid(h))return '<h1>② វេជ្ជបណ្ឌិត</h1>'+lockBox("ទំព័រណែនាំវេជ្ជបណ្ឌិត");
+  const docs=DB.doctors.filter(d=>d.hosp.includes(h.id));
+  const ed=p.doc==="new"?{km:"",spec:"general",deg:"",career:"",years:"",consent:false,hosp:[h.id]}:(p.doc?D(p.doc):null);
+  return '<div class="work-h"><h1>② វេជ្ជបណ្ឌិត</h1><button class="btn pri" type="button" data-doc="new">+ បន្ថែមវេជ្ជបណ្ឌិត</button></div><p class="muted small">ទំព័រថេរ មួយទំព័រក្នុងវេជ្ជបណ្ឌិតម្នាក់។ បញ្ចូលតាមប្រអប់នីមួយៗ (មិនមែនសរសេរដោយសេរី)។</p>'+
+   '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>ឈ្មោះ</th><th>ផ្នែក</th><th>ធ្វើការនៅ</th><th></th></tr></thead><tbody>'+
+   (docs.length?docs.map(d=>'<tr><td>'+esc(d.km)+'</td><td>'+spec(d.spec).km+'</td><td>'+d.hosp.map(x=>esc(H(x).km)).join("<br>")+'</td><td><button class="btn sm" type="button" data-doc="'+d.id+'">កែ</button></td></tr>').join(""):'<tr><td colspan="4" class="muted">មិនទាន់មាន</td></tr>')+'</tbody></table></div>'+
+   (ed?'<form id="f-doc" class="panel form" data-id="'+(p.doc==="new"?"":ed.id)+'"><div class="work-h full field"><h2>'+(p.doc==="new"?"បន្ថែមវេជ្ជបណ្ឌិត":"កែព័ត៌មានវេជ្ជបណ្ឌិត")+'</h2><button class="btn sm" type="button" data-tpl="doctor">ប្រើទំព័រគំរូ</button></div>'+
+     fld("ឈ្មោះ",inp("d_km",ed.km,"text","required"),{req:1,for:"d_km"})+fld("ផ្នែក",sel("d_spec",SPECS.map(s=>[s.id,s.km]),ed.spec),{req:1,for:"d_spec"})+
+     fld("សញ្ញាបត្រ",inp("d_deg",ed.deg),{for:"d_deg"})+fld("បទពិសោធន៍ (ឆ្នាំ)",inp("d_years",ed.years,"number",'min="0"'),{for:"d_years"})+
+     fld("ប្រវត្តិការងារ",ta("d_career",ed.career,3),{full:1,for:"d_career"})+
+     fld("រូបថត",'<span class="ava">'+esc((ed.km||"?").replace("វេជ្ជបណ្ឌិត ","").slice(0,1))+'</span>',{hint:"ជំនាន់សាកល្បង៖ មិនទាន់អាចផ្ទុករូបបាន"})+
+     '<label class="chk full"><input type="checkbox" name="d_consent" '+(ed.consent?"checked":"")+' required>វេជ្ជបណ្ឌិតបានយល់ព្រម ឱ្យផ្សព្វផ្សាយព័ត៌មាននេះ<span class="req">*</span></label>'+
+     '<div class="form-acts"><button class="btn" type="button" data-doc="">បោះបង់</button><button class="btn pri" type="submit">រក្សាទុក</button></div></form>':'');
+};
+STV.articles=(h,p)=>{
+  if(!isPaid(h))return '<h1>③–⑦ អត្ថបទ</h1>'+lockBox("ការបង្ហោះអត្ថបទ");
+  const arts=DB.articles.filter(a=>a.hosp===h.id).sort((a,b)=>b.date.localeCompare(a.date));
+  const ed=p.art==="new"?{type:"notice",title:"",body:"",specs:[],author:""}:(p.art?A(p.art):null);
+  const docs=DB.doctors.filter(d=>d.hosp.includes(h.id));
+  return '<div class="work-h"><h1>③–⑦ អត្ថបទ</h1><button class="btn pri" type="button" data-art="new">+ សរសេរអត្ថបទថ្មី</button></div><p class="muted small">អត្ថបទមានកាលបរិច្ឆេទ។ គ្មានកំណត់ចំនួន។</p>'+
+   '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>ចំណងជើង</th><th>ប្រភេទ</th><th>ស្ថានភាព</th><th>កាលបរិច្ឆេទ</th><th></th></tr></thead><tbody>'+
+   (arts.length?arts.map(a=>'<tr><td>'+('<span data-raw>'+esc(a.title)+'</span>')+'</td><td>'+ANUM[a.type]+' '+ATYPE[a.type]+'</td><td>'+statusBadge(a.status)+'</td><td class="num">'+kmDate(a.date)+'</td><td><button class="btn sm" type="button" data-art="'+a.id+'">កែ</button></td></tr>').join(""):'<tr><td colspan="5" class="muted">មិនទាន់មាន</td></tr>')+'</tbody></table></div>'+
+   (ed?'<form id="f-art" class="panel form" data-id="'+(p.art==="new"?"":ed.id)+'"><h2 class="field full">'+(p.art==="new"?"អត្ថបទថ្មី":"កែអត្ថបទ")+'</h2>'+
+     fld("ប្រភេទ",sel("a_type",Object.keys(ATYPE).map(k=>[k,ANUM[k]+" "+ATYPE[k]]),ed.type),{req:1,for:"a_type"})+
+     fld("អ្នកសរសេរ",sel("a_author",[["","—"]].concat(docs.map(d=>[d.id,d.km])),ed.author),{for:"a_author",hint:"អត្ថបទសុខភាព គួរមានឈ្មោះវេជ្ជបណ្ឌិត"})+
+     fld("ចំណងជើង",inp("a_title",ed.title,"text","required"),{req:1,full:1,for:"a_title"})+
+     fld("ខ្លឹមសារ",ta("a_body",ed.body,8),{req:1,full:1,for:"a_body",hint:"«## » សម្រាប់ចំណងជើងរង · «- » សម្រាប់បញ្ជី"})+
+     fld("ផ្នែកពាក់ព័ន្ធ",specChecks("a_specs",ed.specs),{full:1})+
+     (ed.type==="event"?'<div class="note full">អត្ថបទព្រឹត្តិការណ៍ និងប្រូម៉ូសិន ត្រូវអ្នកគ្រប់គ្រងពិនិត្យជាមុន។</div>':'')+
+     '<div class="form-acts"><button class="btn" type="button" data-art="">បោះបង់</button><button class="btn" type="submit" name="act" value="draft">រក្សាទុកជាសេចក្តីព្រាង</button><button class="btn pri" type="submit" name="act" value="publish">ផ្សព្វផ្សាយ</button></div></form>':'');
+};
+
+/* ================= admin ================= */
+function adminView(){
+  const av=S.admin.view;
+  const pend=DB.hospitals.filter(h=>h.status==="pending").length+DB.changes.length+DB.claims.length;
+  const ho=DB.hospitals.filter(h=>h.route==="proxy"&&h.handover==="pending").length;
+  const nav=[["overview","ទិដ្ឋភាពទូទៅ",0],["apps","ពាក្យស្នើសុំ",pend],["proxy","ចុះឈ្មោះជំនួស",0],["handover","មិនទាន់ផ្ទេរសិទ្ធិ",ho],["plans","គ្រប់គ្រងគម្រោង",0],["articles","អត្ថបទ",0],["masters","ទិន្នន័យមេ",0],["synonyms","វចនានុក្រមពាក្យដូចគ្នា",0],["templates","ទំព័រគំរូ ①②",0]];
+  const side='<nav class="side" aria-label="ម៉ឺនុយអ្នកគ្រប់គ្រង"><div class="who"><b>ក្រុមការងាររកពេទ្យ</b><span class="small muted">អ្នកគ្រប់គ្រង</span></div>'+nav.map(([k,l,c])=>'<button type="button" data-av="'+k+'" class="'+(av===k?"on":"")+'"><span>'+l+'</span>'+(c?'<span class="cnt">'+km(c)+'</span>':'')+'</button>').join("")+'</nav>';
+  return '<div class="shell">'+side+'<div class="work">'+(ADV[av]||ADV.overview)(S.admin.p)+'</div></div>';
+}
+const ADV={};
+ADV.overview=()=>{
+  const pend=DB.hospitals.filter(h=>h.status==="pending");
+  const ho=DB.hospitals.filter(h=>h.route==="proxy"&&h.handover==="pending");
+  const paid=live().filter(isPaid);
+  return '<h1>ទិដ្ឋភាពទូទៅ</h1><div class="stats">'+
+   '<div class="stat'+(pend.length+DB.changes.length+DB.claims.length?" alert":"")+'"><span class="small muted">ពាក្យស្នើសុំរង់ចាំ</span><b>'+km(pend.length+DB.changes.length+DB.claims.length)+'</b></div>'+
+   '<div class="stat'+(ho.length?" alert":"")+'"><span class="small muted">មិនទាន់ផ្ទេរសិទ្ធិ</span><b>'+km(ho.length)+'</b></div>'+
+   '<div class="stat"><span class="small muted">មន្ទីរពេទ្យបានផ្សព្វផ្សាយ</span><b>'+km(live().length)+'</b><span class="small muted">បង់ប្រាក់ '+km(paid.length)+'</span></div>'+
+   '<div class="stat"><span class="small muted">អត្ថបទបានផ្សព្វផ្សាយ</span><b>'+km(pubArts().length)+'</b></div></div>'+
+   '<div class="panel"><div class="sec-h"><h3>ត្រូវធ្វើថ្ងៃនេះ</h3></div>'+
+   (pend.length?'<p>• ពិនិត្យការចុះឈ្មោះថ្មី '+km(pend.length)+' <button class="link" type="button" data-av="apps">មើល ›</button></p>':'')+
+   (DB.changes.length?'<p>• ពិនិត្យការកែឈ្មោះ/អាសយដ្ឋាន '+km(DB.changes.length)+' <button class="link" type="button" data-av="apps">មើល ›</button></p>':'')+
+   (DB.claims.length?'<p>• ពិនិត្យការស្នើសុំសិទ្ធិជាម្ចាស់ '+km(DB.claims.length)+' <button class="link" type="button" data-av="apps">មើល ›</button></p>':'')+
+   ho.filter(h=>daysBetween(h.invited,TODAY)>=7).map(h=>'<p>• ទាក់ទង '+esc(h.km)+' (ផ្ញើតំណ '+km(daysBetween(h.invited,TODAY))+' ថ្ងៃមុន) <button class="link" type="button" data-av="handover">មើល ›</button></p>').join("")+
+   (!pend.length&&!DB.changes.length&&!DB.claims.length&&!ho.length?'<p class="muted">គ្មានការងាររង់ចាំ</p>':'')+'</div>';
+};
+ADV.apps=()=>{
+  const pend=DB.hospitals.filter(h=>h.status==="pending");
+  return '<h1>ពាក្យស្នើសុំ</h1>'+
+   '<h2>ការចុះឈ្មោះថ្មី</h2><div class="tbl-wrap"><table class="tbl"><thead><tr><th>មន្ទីរពេទ្យ</th><th>ទីតាំង / ទូរស័ព្ទ</th><th>ផ្នែក / រោគសញ្ញា</th><th>វិធីផ្ទៀងផ្ទាត់</th><th>សកម្មភាព</th></tr></thead><tbody>'+
+   (pend.length?pend.map(h=>'<tr><td><b>'+esc(h.km)+'</b><br><span class="small muted">'+typeKm(h.type)+' · ដាក់ '+kmDate(h.applied)+'</span></td><td>ខណ្ឌ'+khan(h.khan).km+'<br><span class="num">'+h.phone+'</span></td><td class="small">'+h.specs.map(s=>spec(s).km).join(", ")+'<br><span class="muted">'+h.sym.map(esc).join(", ")+'</span></td><td><div class="field"><select data-vm="'+h.id+'" aria-label="វិធីផ្ទៀងផ្ទាត់"><option>ទូរស័ព្ទ</option><option>លេខអាជ្ញាប័ណ្ណក្រសួងសុខាភិបាល</option><option>ចុះទៅដល់កន្លែង</option></select></div></td><td><div class="acts"><button class="btn pri sm" type="button" data-approve="'+h.id+'">អនុម័ត</button><button class="btn sm" type="button" data-return="'+h.id+'">ប្រគល់ឱ្យកែ</button></div><div class="field" style="margin-top:6px"><input type="text" data-reason="'+h.id+'" placeholder="មូលហេតុ (ពេលប្រគល់ឱ្យកែ)" aria-label="មូលហេតុ"></div></td></tr>').join(""):'<tr><td colspan="5" class="muted">គ្មាន</td></tr>')+'</tbody></table></div>'+
+   '<h2>ការកែឈ្មោះ / អាសយដ្ឋាន</h2><div class="tbl-wrap"><table class="tbl"><thead><tr><th>មន្ទីរពេទ្យ</th><th>ចំណុច</th><th>មុន</th><th>ក្រោយ</th><th>សកម្មភាព</th></tr></thead><tbody>'+
+   (DB.changes.length?DB.changes.map(c=>'<tr><td>'+esc(H(c.hosp).km)+'<br><span class="small muted">'+kmDate(c.date)+'</span></td><td>'+esc(c.field)+'</td><td>'+('<span data-raw>'+esc(c.from)+'</span>')+'</td><td><b>'+('<span data-raw>'+esc(c.to)+'</span>')+'</b></td><td><div class="acts"><button class="btn pri sm" type="button" data-chg="'+c.id+'" data-ok="1">អនុម័ត</button><button class="btn sm" type="button" data-chg="'+c.id+'">បដិសេធ</button></div></td></tr>').join(""):'<tr><td colspan="5" class="muted">គ្មាន</td></tr>')+'</tbody></table></div>'+
+   '<h2>ការស្នើសុំសិទ្ធិជាម្ចាស់</h2><p class="small muted">«ខ្ញុំជាអ្នកទទួលបន្ទុកមន្ទីរពេទ្យនេះ» សម្រាប់មន្ទីរពេទ្យដែលបានចុះឈ្មោះជំនួសរួចហើយ</p><div class="tbl-wrap"><table class="tbl"><thead><tr><th>មន្ទីរពេទ្យ</th><th>អ្នកស្នើសុំ</th><th>ទូរស័ព្ទ</th><th>កាលបរិច្ឆេទ</th><th>សកម្មភាព</th></tr></thead><tbody>'+
+   (DB.claims.length?DB.claims.map(c=>'<tr><td>'+esc(H(c.hosp).km)+'</td><td>'+esc(c.who)+'</td><td class="num">'+c.phone+'</td><td>'+kmDate(c.date)+'</td><td><div class="acts"><button class="btn pri sm" type="button" data-claim="'+c.id+'" data-ok="1">អនុម័ត</button><button class="btn sm" type="button" data-claim="'+c.id+'">បដិសេធ</button></div></td></tr>').join(""):'<tr><td colspan="5" class="muted">គ្មាន</td></tr>')+'</tbody></table></div>';
+};
+ADV.proxy=p=>{
+  const done=p.invite?H(p.invite):null;
+  return '<h1>ចុះឈ្មោះជំនួស</h1><p class="muted">ពេលចុះលក់ អ្នកគ្រប់គ្រងចុះព័ត៌មានជំនួសមន្ទីរពេទ្យ រួចផ្ញើតំណអញ្ជើញទៅអ្នកទទួលបន្ទុក។</p>'+
+   (done?'<div class="panel" style="border-color:var(--jade)"><h3>បានចុះឈ្មោះ និងផ្សព្វផ្សាយ៖ '+esc(done.km)+'</h3><p class="small">តំណអញ្ជើញ (ផ្ញើតាម Telegram ឬ SMS)</p><div class="callbox"><span class="mono">https://rokpet.example/invite/'+done.id+'-'+done.invited.replace(/-/g,"")+'</span><button class="link" type="button" data-copy="https://rokpet.example/invite/'+done.id+'-'+done.invited.replace(/-/g,"")+'">ចម្លង</button></div><p class="small muted">ផុតកំណត់ '+kmDate(addDays(done.invited,7))+' (រយៈពេលពិតប្រាកដ មិនទាន់កំណត់)</p></div>':'')+
+   '<form id="f-proxy" class="panel form">'+infoForm(null,"p")+fld("អ្នកលក់ទទួលបន្ទុក",inp("p_sales",""),{for:"p_sales"})+fld("វិធីផ្ទៀងផ្ទាត់",sel("p_verify",[["ចុះទៅដល់កន្លែង","ចុះទៅដល់កន្លែង"],["ទូរស័ព្ទ","ទូរស័ព្ទ"]],"ចុះទៅដល់កន្លែង"),{for:"p_verify"})+'<div class="form-acts"><button class="btn pri" type="submit">ចុះឈ្មោះ និងបង្កើតតំណអញ្ជើញ</button></div></form>';
+};
+ADV.handover=()=>{
+  const list=DB.hospitals.filter(h=>h.route==="proxy"&&h.handover==="pending");
+  return '<h1>មិនទាន់ផ្ទេរសិទ្ធិ</h1><p class="muted">មន្ទីរពេទ្យដែលបានចុះឈ្មោះជំនួស តែអ្នកទទួលបន្ទុកមិនទាន់បង្កើតគណនី។ ទាក់ទងបើលើស ៧ ថ្ងៃ។</p>'+
+   '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>មន្ទីរពេទ្យ</th><th>អ្នកលក់</th><th>ផ្ញើតំណ</th><th>ផុតកំណត់</th><th>កំណត់ចំណាំ</th><th>សកម្មភាព</th></tr></thead><tbody>'+
+   (list.length?list.map(h=>{const exp=addDays(h.invited,7);const expired=exp<TODAY;const age=daysBetween(h.invited,TODAY);
+     return '<tr><td><b>'+esc(h.km)+'</b><br><span class="num small">'+h.phone+'</span></td><td>'+esc(h.sales||"—")+'</td><td>'+kmDate(h.invited)+'<br><span class="small '+(age>=7?"":"muted")+'" style="'+(age>=7?"color:var(--red)":"")+'">'+km(age)+' ថ្ងៃមុន</span></td><td>'+(expired?'<span class="badge red">ផុតកំណត់</span>':kmDate(exp))+'</td><td><div class="field"><input type="text" data-memo="'+h.id+'" value="'+esc(h.memo)+'" aria-label="កំណត់ចំណាំ"></div></td><td><div class="acts"><button class="btn sm" type="button" data-reissue="'+h.id+'">ចេញតំណថ្មី</button><button class="btn pri sm" type="button" data-handover="'+h.id+'">បានផ្ទេររួច</button></div></td></tr>'}).join(""):'<tr><td colspan="6" class="muted">គ្មាន</td></tr>')+'</tbody></table></div>';
+};
+ADV.plans=()=>'<h1>គ្រប់គ្រងគម្រោង</h1><p class="muted">គម្រោងឥតគិតថ្លៃ៖ ព័ត៌មានមូលដ្ឋានប៉ុណ្ណោះ · គម្រោងបង់ប្រាក់៖ បង្ហោះអត្ថបទ ①–⑦ គ្មានកំណត់ និងបង្ហាញក្នុងស៊ុម «មន្ទីរពេទ្យដៃគូ»។ ពេលឈប់បង់ អត្ថបទត្រូវលាក់ (មិនលុប)។</p>'+
+  '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>មន្ទីរពេទ្យ</th><th>គម្រោង</th><th>ដល់ថ្ងៃ</th><th>អត្ថបទ</th><th>សកម្មភាព</th></tr></thead><tbody>'+
+  live().map(h=>{const n=DB.articles.filter(a=>a.hosp===h.id&&a.status==="published").length;return '<tr><td>'+esc(h.km)+'</td><td>'+planBadge(h)+'</td><td>'+(h.until?kmDate(h.until):"—")+'</td><td class="num">'+km(n)+'</td><td>'+(isPaid(h)?'<button class="btn sm" type="button" data-plan="'+h.id+'" data-to="free">ប្តូរទៅឥតគិតថ្លៃ</button>':'<button class="btn pri sm" type="button" data-plan="'+h.id+'" data-to="paid">ប្តូរទៅបង់ប្រាក់</button>')+'</td></tr>'}).join("")+'</tbody></table></div>'+
+  '<p class="small muted">ការបង់ប្រាក់៖ ABA Pay · KHQR · កាតឥណទាន (ចំនួនទឹកប្រាក់ មិនទាន់កំណត់)</p>';
+ADV.articles=()=>'<h1>អត្ថបទ</h1><p class="muted">ច្បាប់ពិនិត្យអត្ថបទ មិនទាន់កំណត់។ អ្នកគ្រប់គ្រងអាចលាក់អត្ថបទដែលមិនសមរម្យ។</p>'+
+  '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>ចំណងជើង</th><th>មន្ទីរពេទ្យ</th><th>ប្រភេទ</th><th>ស្ថានភាព</th><th>កាលបរិច្ឆេទ</th><th></th></tr></thead><tbody>'+
+  DB.articles.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(a=>'<tr><td>'+('<span data-raw>'+esc(a.title)+'</span>')+'</td><td>'+esc(H(a.hosp).km)+'</td><td>'+ANUM[a.type]+' '+ATYPE[a.type]+(a.type==="event"?' <span class="badge gold">ពិនិត្យមុន</span>':'')+'</td><td>'+statusBadge(a.status)+'</td><td>'+kmDate(a.date)+'</td><td>'+(a.status==="published"?'<button class="btn sm" type="button" data-hide="'+a.id+'">លាក់</button>':a.status==="hidden"?'<button class="btn sm" type="button" data-hide="'+a.id+'" data-show="1">បង្ហាញវិញ</button>':'')+'</td></tr>').join("")+'</tbody></table></div>';
+ADV.masters=()=>'<h1>ទិន្នន័យមេ</h1>'+
+  '<div class="panel"><h2>ផ្នែក</h2><p class="small muted">បង្ហាញលើអេក្រង់ជា «ផ្នែក» + ឈ្មោះ</p><div class="tags">'+SPECS.map(s=>'<span class="tag">ផ្នែក'+esc(s.km)+'</span>').join("")+'</div>'+
+  '<form id="f-spec" class="form" style="grid-template-columns:1fr auto;align-items:end">'+fld("បន្ថែមផ្នែកថ្មី",inp("s_km","","text",'required placeholder="ឧ. បេះដូង"'),{for:"s_km"})+'<button class="btn pri" type="submit">បន្ថែម</button></form></div>'+
+  '<div class="panel"><h2>ប្រភេទមន្ទីរពេទ្យ</h2><div class="tags">'+TYPES.map(t=>'<span class="tag">'+t.km+' · '+(t.pub?"រដ្ឋ":"ឯកជន")+'</span>').join("")+'</div></div>'+
+  '<div class="panel"><h2>តំបន់រដ្ឋបាល</h2><p class="small muted">នាំចូលទូទាំងប្រទេសពីទិន្នន័យផ្លូវការ (ប្រភពមិនទាន់កំណត់)។ ជំនាន់សាកល្បង៖ រាជធានីភ្នំពេញ '+km(KHANS.length)+' ខណ្ឌ</p></div>';
+ADV.synonyms=()=>'<h1>វចនានុក្រមពាក្យដូចគ្នា</h1><p class="muted">ប្រមូលពាក្យរោគសញ្ញាដែលសរសេរខុសៗគ្នា ឱ្យស្វែងរកឃើញដូចគ្នា។ ឧ. «ក្តៅខ្លួន» → «គ្រុនក្តៅ»</p>'+
+  '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>ពាក្យតំណាង</th><th>ពាក្យដូចគ្នា</th><th>បន្ថែមពាក្យ</th></tr></thead><tbody>'+
+  DB.synonyms.map((e,i)=>'<tr><td><b>'+('<span data-raw>'+esc(e.canon)+'</span>')+'</b></td><td><div class="tags">'+e.vars.map(v=>'<span class="tag" data-raw>'+esc(v)+'</span>').join("")+'</div></td><td><div class="acts"><div class="field"><input type="text" data-synin="'+i+'" aria-label="ពាក្យថ្មី"></div><button class="btn sm" type="button" data-synadd="'+i+'">បន្ថែម</button></div></td></tr>').join("")+'</tbody></table></div>'+
+  '<form id="f-syn" class="panel form" style="grid-template-columns:1fr 2fr auto;align-items:end">'+fld("ពាក្យតំណាងថ្មី",inp("y_canon","","text","required"),{for:"y_canon"})+fld("ពាក្យដូចគ្នា (បំបែកដោយក្បៀស)",inp("y_vars",""),{for:"y_vars"})+'<button class="btn pri" type="submit">បន្ថែម</button></form>'+
+  '<div class="panel"><h3>ពាក្យដែលស្វែងរកមិនឃើញ (ខែនេះ)</h3><p class="small muted">យកមកបន្ថែមក្នុងវចនានុក្រម</p><div class="tags"><span class="tag">ឈឺខ្នង · ៨</span><span class="tag">ហៀរសំបោរ · ៥</span><span class="tag">វិលមុខ · ៤</span></div></div>';
+ADV.templates=()=>{const t=DB.templates;return '<h1>ទំព័រគំរូ ①②</h1><p class="muted">មន្ទីរពេទ្យប្រើទំព័រគំរូនេះ ពេលបង្កើតទំព័រណែនាំគ្លីនិក និងវេជ្ជបណ្ឌិត។</p>'+
+  '<form id="f-tpl" class="panel form"><h2 class="field full">① ណែនាំគ្លីនិក</h2>'+fld("សេចក្តីផ្តើម",ta("t_intro",t.clinic.intro,2),{full:1,for:"t_intro"})+fld("ចំណុចពិសេស",ta("t_feat",t.clinic.feat,3),{full:1,for:"t_feat"})+fld("ការធ្វើដំណើរ",ta("t_access",t.clinic.access,2),{full:1,for:"t_access"})+
+  '<h2 class="field full">② ណែនាំវេជ្ជបណ្ឌិត</h2>'+fld("សញ្ញាបត្រ",inp("t_deg",t.doctor.deg),{for:"t_deg"})+fld("ប្រវត្តិការងារ",ta("t_career",t.doctor.career,2),{full:1,for:"t_career"})+'<div class="form-acts"><button class="btn pri" type="submit">រក្សាទុក</button></div></form>'};
+
+/* ================= autocomplete ================= */
+function suggest(v){
+  const t=norm(v);if(!t)return [];
+  const g=[];
+  const hs=live().filter(h=>nameMatch(h,t)).slice(0,4);
+  if(hs.length)g.push(["មន្ទីរពេទ្យ",hs.map(h=>({k:"h",id:h.id,label:h.km}))]);
+  const pool=new Set(allSymptoms());DB.synonyms.forEach(e=>pool.add(e.canon));
+  const c=canonSym(v);
+  const ss=Array.from(pool).filter(s=>norm(s).includes(t)||(c&&s===c)).slice(0,5);
+  if(ss.length)g.push(["រោគសញ្ញា",ss.map(s=>({k:"s",label:s}))]);
+  return g;
+}
+function bindSearch(){
+  $$(".search").forEach(box=>{
+    const q=box.querySelector("input"),ac=box.querySelector(".ac");let items=[],idx=-1;
+    const pick=it=>{ac.hidden=true;if(it.k==="h")go("hospital",{id:it.id});else go("results",{q:it.label})};
+    q.addEventListener("input",()=>{
+      const g=suggest(q.value);items=[];idx=-1;
+      if(!g.length){ac.hidden=true;return}
+      ac.innerHTML=g.map(([lab,arr])=>'<div class="ac-g">'+lab+'</div>'+arr.map(it=>{items.push(it);return '<button type="button" data-i="'+(items.length-1)+'">'+esc(it.label)+'</button>'}).join("")).join("");
+      ac.hidden=false;translateTree(ac);
+      ac.querySelectorAll("button").forEach(b=>b.addEventListener("mousedown",e=>{e.preventDefault();pick(items[+b.dataset.i])}));
+    });
+    q.addEventListener("blur",()=>setTimeout(()=>ac.hidden=true,150));
+    q.addEventListener("keydown",e=>{
+      const bs=ac.querySelectorAll("button");
+      if(e.key==="ArrowDown"&&!ac.hidden){e.preventDefault();idx=Math.min(idx+1,bs.length-1);bs.forEach((b,i)=>b.classList.toggle("on",i===idx))}
+      else if(e.key==="ArrowUp"&&!ac.hidden){e.preventDefault();idx=Math.max(idx-1,0);bs.forEach((b,i)=>b.classList.toggle("on",i===idx))}
+      else if(e.key==="Enter"){e.preventDefault();if(idx>=0&&items[idx])pick(items[idx]);else if(q.value.trim()){ac.hidden=true;go("results",{q:q.value.trim()})}}
+      else if(e.key==="Escape")ac.hidden=true;
+    });
+  });
+}
+function afterRender(){
+  document.title=S.lang==="en"?"RokPet PC Bright":"រកពេទ្យ PC ភ្លឺ";
+  document.documentElement.lang=S.lang;$$('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.lang===S.lang));translateTree(document.getElementById('top'));translateTree(document.getElementById('app'));
+  bindSearch();
+  if(S.pendingScroll){const el=document.getElementById(S.pendingScroll);S.pendingScroll=null;if(el)el.scrollIntoView()}
+}
+
+/* ================= events ================= */
+function copy(v){try{navigator.clipboard.writeText(v).then(()=>toast("បានចម្លង"),()=>toast(v))}catch(e){toast(v)}}
+const stGo=(view,p)=>{S.staff.view=view;S.staff.p=p||{};render();window.scrollTo(0,0)};
+const adGo=(view,p)=>{S.admin.view=view;S.admin.p=p||{};render();window.scrollTo(0,0)};
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button,a");if(!t)return;
+  const d=t.dataset;
+  if(d.lang){S.lang=d.lang;render();return}
+  if(d.role){S.role=d.role;render();window.scrollTo(0,0);return}
+  if(t.id==="homeBtn"){S.role="public";S.stack=[];S.pub={view:"home",p:{}};render();window.scrollTo(0,0);return}
+  if(d.nav){S.stack=[];go(d.nav,{},true);return}
+  if(d.go){
+    const p={};["id","mode","spec","khan","sk","prov","q","hosp"].forEach(k=>{if(d[k]!==undefined&&d[k]!=="")p[k]=d[k]});
+    if(d.tab==="arts")S.pendingScroll="sec-arts";
+    go(d.go,p);return;
+  }
+  if("back" in d){back();return}
+  if(d.call){const root=t.closest(".card,.panel");const cb=root&&root.querySelector('[data-cb="'+d.call+'"]');if(cb)cb.hidden=!cb.hidden;return}
+  if(d.copy){copy(d.copy);return}
+  if(d.sort){setPub({sort:d.sort});return}
+  if(d.rm){const p=Object.assign({},S.pub.p);p.f=Object.assign({},p.f||{});
+    if(d.rm==="f:all")p.f={};else if(d.rm.startsWith("f:"))delete p.f[d.rm.slice(2)];else{delete p[d.rm];if(d.rm==="khan")delete p.sk}
+    S.pub={view:S.pub.view,p};render();return}
+  if("more" in d){S.moreSpecs=!S.moreSpecs;render();return}
+  if(d.dspec!==undefined){setPub({spec:d.dspec});return}
+  if(d.aspec!==undefined){setPub({spec:d.aspec});return}
+  if(d.atype!==undefined){setPub({type:d.atype});return}
+  /* staff */
+  if(d.login){S.staff.hid=d.login;stGo("dash");return}
+  if("otp" in d){toast("ជំនាន់សាកល្បង៖ សូមជ្រើសគណនីខាងក្រោម");return}
+  if("logout" in d){S.staff.hid=null;stGo("login");return}
+  if(d.sv){stGo(d.sv);return}
+  if("upgrade" in d){toast("បានផ្ញើសំណើទៅក្រុមការងារ");return}
+  if(d.doc!==undefined){stGo("doctors",{doc:d.doc});return}
+  if(d.art!==undefined){stGo("articles",{art:d.art});return}
+  if(d.tpl){
+    const f=t.closest(".work").querySelector("form");const h=H(S.staff.hid);
+    if(d.tpl==="clinic"){const tp=DB.templates.clinic;const fill=s=>s.replace("[ឈ្មោះមន្ទីរពេទ្យ]",h.km).replace("[ប្រភេទ]",typeKm(h.type)).replace("[ខណ្ឌ]",khan(h.khan).km);
+      f.elements.c_intro.value=fill(tp.intro);f.elements.c_feat.value=tp.feat;f.elements.c_access.value=tp.access}
+    else{const tp=DB.templates.doctor;f.elements.d_deg.value=tp.deg;f.elements.d_career.value=tp.career}
+    toast("បានបំពេញតាមទំព័រគំរូ");return;
+  }
+  /* admin */
+  if(d.av){adGo(d.av);return}
+  if(d.approve){const h=H(d.approve);const vm=document.querySelector('[data-vm="'+h.id+'"]');h.status="approved";h.verify=(vm?vm.value:"ទូរស័ព្ទ")+" · "+TODAY;toast("បានអនុម័ត · ផ្ញើដំណឹងតាមតេឡេក្រាម");render();return}
+  if(d.return){const h=H(d.return);const r=document.querySelector('[data-reason="'+h.id+'"]');if(!r.value.trim()){toast("សូមសរសេរមូលហេតុ");r.focus();return}h.status="returned";h.reason=r.value.trim();toast("បានប្រគល់ឱ្យកែ");render();return}
+  if(d.chg){const i=DB.changes.findIndex(c=>c.id===d.chg);const c=DB.changes[i];if(d.ok){const h=H(c.hosp);if(c.field==="ឈ្មោះ")h.km=c.to;else if(c.vals)Object.assign(h,c.vals)}DB.changes.splice(i,1);toast(d.ok?"បានអនុម័ត":"បានបដិសេធ");render();return}
+  if(d.claim){const i=DB.claims.findIndex(c=>c.id===d.claim);DB.claims.splice(i,1);toast(d.ok?"បានអនុម័ត · ផ្ទេរសិទ្ធិគ្រប់គ្រង":"បានបដិសេធ");render();return}
+  if(d.reissue){const h=H(d.reissue);h.invited=TODAY;const u="https://rokpet.example/invite/"+h.id+"-"+TODAY.replace(/-/g,"");copy(u);render();return}
+  if(d.handover){const h=H(d.handover);h.handover="done";toast("បានផ្ទេរសិទ្ធិ");render();return}
+  if(d.plan){const h=H(d.plan);
+    if(d.to==="paid"){h.plan="paid";h.until=addDays(TODAY,365);DB.articles.forEach(a=>{if(a.hosp===h.id&&a.status==="hiddenplan")a.status="published"})}
+    else{h.plan="free";h.until="";DB.articles.forEach(a=>{if(a.hosp===h.id&&a.status==="published")a.status="hiddenplan"})}
+    toast(d.to==="paid"?"បានប្តូរទៅគម្រោងបង់ប្រាក់":"បានប្តូរទៅគម្រោងឥតគិតថ្លៃ · អត្ថបទត្រូវបានលាក់");render();return}
+  if(d.hide){const a=A(d.hide);a.status=d.show?"published":"hidden";toast(d.show?"បានបង្ហាញវិញ":"បានលាក់");render();return}
+  if(d.synadd!==undefined){const i=+d.synadd;const el=document.querySelector('[data-synin="'+i+'"]');const v=el.value.trim();if(!v)return;DB.synonyms[i].vars.push(v);toast("បានបន្ថែម");render();return}
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.dataset.f){const f=Object.assign({},S.pub.p.f||{});f[t.dataset.f]=t.checked?1:0;setPub({f});return}
+  if(t.dataset.fs){const f=Object.assign({},S.pub.p.f||{});f[t.dataset.fs]=t.value;setPub({f});return}
+  if(t.dataset.fr){const f=Object.assign({},S.pub.p.f||{});f[t.dataset.fr]=t.value;setPub({f});return}
+  if(t.dataset.memo){H(t.dataset.memo).memo=t.value;toast("បានរក្សាទុក");return}
+  if(t.name==="a_type"&&t.form&&t.form.id==="f-art"){/* keep form values; no rerender */}
+});
+document.addEventListener("submit",e=>{
+  const f=e.target;e.preventDefault();
+  if(f.id==="f-reg"){
+    const v=readInfo(f,"r");if(!v.km){toast("សូមបំពេញឈ្មោះ");return}
+    const id=uid("h");DB.hospitals.push(Object.assign({id,plan:"free",until:"",status:"pending",route:"self",handover:"done",applied:TODAY,sales:"",memo:"",verify:""},v));
+    S.staff.hid=id;toast("បានដាក់ពាក្យស្នើសុំ");stGo("dash");return;
+  }
+  if(f.id==="f-info"){
+    const h=H(S.staff.hid);const v=readInfo(f,"i");
+    const addr=a=>[a.street,a.vil,a.sk,khan(a.khan).km].join(" ");
+    let pending=0;
+    if(v.km!==h.km&&h.status==="approved"){DB.changes.push({id:uid("c"),hosp:h.id,field:"ឈ្មោះ",from:h.km,to:v.km,date:TODAY});pending++}
+    if(addr(v)!==addr(h)&&h.status==="approved"){DB.changes.push({id:uid("c"),hosp:h.id,field:"អាសយដ្ឋាន",from:addr(h),to:addr(v),vals:{street:v.street,vil:v.vil,sk:v.sk,khan:v.khan},date:TODAY});pending++}
+    const keep=h.status==="approved"?{km:h.km,street:h.street,vil:h.vil,sk:h.sk,khan:h.khan}:{};
+    Object.assign(h,v,keep);
+    toast(pending?"បានរក្សាទុក · ឈ្មោះ/អាសយដ្ឋាន រង់ចាំការអនុម័ត":"បានរក្សាទុក · បង្ហាញភ្លាមៗ");render();return;
+  }
+  if(f.id==="f-clinic"){DB.clinicPages[S.staff.hid]={intro:fv(f,"c_intro"),feat:fv(f,"c_feat"),access:fv(f,"c_access"),upd:TODAY};toast("បានផ្សព្វផ្សាយ");render();return}
+  if(f.id==="f-doc"){
+    if(!f.elements.d_consent.checked){toast("សូមបញ្ជាក់ការយល់ព្រមរបស់វេជ្ជបណ្ឌិត");return}
+    const name=fv(f,"d_km");const v={km:name,ini:name.replace("វេជ្ជបណ្ឌិត ","").trim().slice(-1)||"?",spec:fv(f,"d_spec"),deg:fv(f,"d_deg"),career:fv(f,"d_career"),years:Number(fv(f,"d_years"))||0,consent:true};
+    if(f.dataset.id)Object.assign(D(f.dataset.id),v);else DB.doctors.push(Object.assign({id:uid("d"),hosp:[S.staff.hid]},v));
+    toast("បានរក្សាទុក");stGo("doctors");return;
+  }
+  if(f.id==="f-art"){
+    const act=(e.submitter&&e.submitter.value)||"draft";
+    const v={type:fv(f,"a_type"),author:fv(f,"a_author"),title:fv(f,"a_title"),body:fv(f,"a_body"),specs:fchk(f,"a_specs"),status:act==="publish"?"published":"draft",date:TODAY};
+    if(!v.title){toast("សូមបំពេញចំណងជើង");return}
+    if(f.dataset.id)Object.assign(A(f.dataset.id),v);else DB.articles.push(Object.assign({id:uid("a"),hosp:S.staff.hid},v));
+    toast(act==="publish"?"បានផ្សព្វផ្សាយ":"បានរក្សាទុកជាសេចក្តីព្រាង");stGo("articles");return;
+  }
+  if(f.id==="f-proxy"){
+    const v=readInfo(f,"p");if(!v.km){toast("សូមបំពេញឈ្មោះ");return}
+    const id=uid("h");DB.hospitals.push(Object.assign({id,plan:"free",until:"",status:"approved",route:"proxy",handover:"pending",invited:TODAY,sales:fv(f,"p_sales"),memo:"",verify:fv(f,"p_verify")+" · "+TODAY},v));
+    toast("បានចុះឈ្មោះ និងផ្សព្វផ្សាយ");adGo("proxy",{invite:id});return;
+  }
+  if(f.id==="f-spec"){const v=fv(f,"s_km");if(v){SPECS.push({id:uid("s"),km:v,extra:1});toast("បានបន្ថែម");render()}return}
+  if(f.id==="f-syn"){const c=fv(f,"y_canon");if(!c)return;DB.synonyms.push({canon:c,vars:fv(f,"y_vars").split(/[,،]/).map(s=>s.trim()).filter(Boolean)});toast("បានបន្ថែម");render();return}
+  if(f.id==="f-tpl"){DB.templates.clinic={intro:fv(f,"t_intro"),feat:fv(f,"t_feat"),access:fv(f,"t_access")};DB.templates.doctor={deg:fv(f,"t_deg"),career:fv(f,"t_career")};toast("បានរក្សាទុក");return}
+});
+
+/* ================= i18n: Khmer ⇄ English (UI + master data; hospital-written content stays as written) ================= */
+const EN={
+ /* header / roles / nav */
+ "រកពេទ្យ":"RokPet","ទិន្នន័យគំរូ":"Sample data","មើលជា៖":"View as:","អ្នកប្រើទូទៅ":"Public","អ្នកគ្រប់គ្រង":"Admin",
+ "ទំព័រដើម":"Home","ត្រឡប់ក្រោយ":"Back","ម៉ឺនុយ":"Menu","តួនាទី":"Role",
+ /* home */
+ "មន្ទីរពេទ្យសង្គ្រោះបន្ទាន់ ២៤ម៉ោង":"24-hour emergency hospitals",
+ "មន្ទីរពេទ្យដែលមានផ្នែកសង្គ្រោះបន្ទាន់ ជិតអ្នកបំផុត":"Hospitals with an emergency department, nearest first",
+ "មន្ទីរពេទ្យបើក ២៤ម៉ោង":"Hospitals open 24 hours",
+ "មន្ទីរពេទ្យ និងគ្លីនិកដែលបើកពេញមួយថ្ងៃមួយយប់":"Hospitals and clinics open day and night",
+ "ឈ្មោះមន្ទីរពេទ្យ ឬរោគសញ្ញា":"Hospital name or symptom",
+ "នៅជិតខ្ញុំ":"Near me","ស្វែងរកតាមតំបន់":"Search by area","ស្វែងរកតាមផ្នែក":"Search by specialty",
+ "ផ្នែកផ្សេងទៀត":"Other specialties","អត្ថបទថ្មីៗ":"Latest articles","មើលទាំងអស់":"See all",
+ "សម្រាប់មន្ទីរពេទ្យ និងគ្លីនិក៖ ចុះឈ្មោះដោយឥតគិតថ្លៃ":"For hospitals and clinics: register for free",
+ "ទិន្នន័យទាំងអស់នៅលើទំព័រនេះ ជាទិន្នន័យគំរូសម្រាប់សាកល្បង":"All data on this page is sample data for testing",
+ "ស្វែងរក":"Search",
+ /* results */
+ "មន្ទីរពេទ្យដែលមានផ្នែកសង្គ្រោះបន្ទាន់ · តម្រៀបតាមចម្ងាយ":"Hospitals with an emergency department · sorted by distance",
+ "តម្រៀបតាមចម្ងាយ":"Sorted by distance","មន្ទីរពេទ្យ និងគ្លីនិកទាំងអស់":"All hospitals and clinics",
+ "លទ្ធផលសម្រាប់":"Results for","ប្រើទីតាំងគំរូ៖":"Sample location:","វិមានឯករាជ្យ":"Independence Monument",
+ "ពីវិមានឯករាជ្យ":"from Independence Monument","កន្លែង":"places","តម្រៀប៖":"Sort:","តម្រៀប":"Sort",
+ "ជិតបំផុត":"Nearest","ពាក់ព័ន្ធបំផុត":"Most relevant","តម្រង":"Filters",
+ "ស្ថានភាព":"Status","កំពុងបើក":"Open now","បើក ២៤ម៉ោង រៀងរាល់ថ្ងៃ":"Open 24 hours, every day","បើក ២៤ម៉ោង":"Open 24 hours",
+ "ទាំងអស់":"All","ប្រភេទ":"Type","ធានារ៉ាប់រង":"Insurance","ទទួល ប.ស.ស":"Accepts NSSF","ប.ស.ស":"NSSF",
+ "សម្អាតតម្រងទាំងអស់":"Clear all filters","រកមិនឃើញលទ្ធផល":"No results found",
+ "សាកល្បងពង្រីកតំបន់ ឬដកតម្រងចេញ":"Try a wider area or remove filters",
+ "ពង្រីកទៅខណ្ឌទាំងមូល":"Widen to the whole khan","ស្វែងរកគ្រប់ខណ្ឌ":"Search all khans","ដកតម្រងចេញ":"Remove filters",
+ "អត្ថបទពាក់ព័ន្ធ":"Related articles","បិទ":"Closed","គ.ម":"km",
+ "ហៅទូរស័ព្ទ":"Call","ផ្លូវទៅ":"Directions","មើលលំអិត":"Details","អានអត្ថបទ":"Read articles","មើលបន្ថែម":"See more",
+ "ទូរស័ព្ទ៖":"Phone:","ចម្លង":"Copy","បានចម្លង":"Copied","មន្ទីរពេទ្យដៃគូ":"Partner hospital",
+ /* area */
+ "ជ្រើសរើសខេត្ត ឬរាជធានី":"Choose a province or the capital","ខេត្ត/រាជធានី":"Province / capital",
+ "ជ្រើសរើសខណ្ឌ":"Choose a khan","ជ្រើសរើសសង្កាត់":"Choose a sangkat","គ្រប់សង្កាត់ក្នុងខណ្ឌ":"All sangkats in Khan ",
+ "មិនទាន់មាន":"None yet",
+ /* hospital detail */
+ "ផ្នែកព្យាបាល":"Specialties","រោគសញ្ញាដែលទទួលព្យាបាល":"Symptoms treated","ណែនាំគ្លីនិក":"Clinic introduction",
+ "អានទាំងអស់":"Read more","វេជ្ជបណ្ឌិតនៅ":"Doctors at ","វេជ្ជបណ្ឌិត ":"Dr. ","វេជ្ជបណ្ឌិត":"Doctors","អត្ថបទរបស់":"Articles from ","អត្ថបទ":"Articles",
+ "ម៉ោងពិនិត្យ":"Opening hours","ថ្ងៃនេះ":"today","អាសយដ្ឋាន":"Address","ទូរស័ព្ទ":"Phone","តេឡេក្រាម":"Telegram",
+ "ហ្វេសប៊ុក":"Facebook","គេហទំព័រ":"Website","មិនទទួល":"Not accepted","ទទួល":"Accepted","រូបថត":"Photo",
+ "កែប្រែចុងក្រោយ":"Last updated","ចំណុចពិសេស":"Highlights","ការធ្វើដំណើរ":"Getting there","ណែនាំវេជ្ជបណ្ឌិត":"Doctor profile",
+ "ជំនាញ":"Specialty","សញ្ញាបត្រ":"Qualifications","ប្រវត្តិការងារ":"Career","បទពិសោធន៍":"Experience","ឆ្នាំ":"years",
+ "អត្ថបទដែលបានសរសេរ":"Articles written","ពិនិត្យនៅ":"Sees patients at","រកមិនឃើញ":"Not found",
+ "ចុះផ្សាយ":"Published","សរសេរដោយ":"Written by","ចុះផ្សាយដោយ":"Published by","ចែករំលែក៖":"Share:","ផ្នែក៖":"Specialty:","ប្រភេទ៖":"Type:",
+ "មិនទាន់មានអត្ថបទ":"No articles yet","រៀងរាល់ថ្ងៃ":"every day","រោគសញ្ញា":"Symptoms","បើក":"open","មូលហេតុ":"Reason","ភាសា / Language":"Language",
+ /* article types */
+ "សេចក្តីជូនដំណឹង":"Notice","អត្ថបទសុខភាព":"Health article","សេវា និងឧបករណ៍ថ្មី":"New services & equipment",
+ "ព្រឹត្តិការណ៍ និងប្រូម៉ូសិន":"Events & promotions","ការជ្រើសរើសបុគ្គលិក":"Recruitment",
+ /* days & months */
+ "ច័ន្ទ":"Monday","អង្គារ":"Tuesday","ពុធ":"Wednesday","ព្រហស្បតិ៍":"Thursday","សុក្រ":"Friday","សៅរ៍":"Saturday","អាទិត្យ":"Sunday",
+ "មករា":"January","កុម្ភៈ":"February","មីនា":"March","មេសា":"April","ឧសភា":"May","មិថុនា":"June","កក្កដា":"July","សីហា":"August","កញ្ញា":"September","តុលា":"October","វិច្ឆិកា":"November","ធ្នូ":"December",
+ /* types */
+ "មន្ទីរពេទ្យជាតិ":"National hospital","មន្ទីរពេទ្យបង្អែក":"Referral hospital","មណ្ឌលសុខភាព":"Health center","មន្ទីរពេទ្យឯកជន":"Private hospital","គ្លីនិកឯកជន":"Private clinic","មន្ទីរពេទ្យ":"Hospital","រដ្ឋ":"Public","ឯកជន":"Private",
+ /* places */
+ "រាជធានីភ្នំពេញ":"Phnom Penh","ខេត្តសៀមរាប":"Siem Reap","ខេត្តបាត់ដំបង":"Battambang","ខេត្តព្រះសីហនុ":"Preah Sihanouk","ខេត្តកំពត":"Kampot","ខេត្តកំពង់ចាម":"Kampong Cham",
+ "មហាវិថីព្រះនរោត្តម":"Norodom Blvd","ផ្លូវជាតិលេខ":"National Rd","ផ្លូវលេខ":"St.","ភូមិ":"Village","ខណ្ឌ":"Khan","សង្កាត់":"Sangkat",
+ /* symptoms */
+ "គ្រុនក្តៅ":"Fever","ឈឺពោះ":"Stomach ache","របួស":"Injury","ឆ្អឹងបាក់":"Broken bone","ឈឺក្បាល":"Headache","ឈឺធ្មេញ":"Toothache","ហើមអញ្ចាញធ្មេញ":"Swollen gums",
+ "ក្អក":"Cough","រាគ":"Diarrhea","ក្អួត":"Vomiting","ពិនិត្យផ្ទៃពោះ":"Prenatal check-up","ឈឺភ្នែក":"Eye pain","ភ្នែកស្រវាំង":"Blurred vision",
+ "រមាស់ស្បែក":"Itchy skin","មុនលើមុខ":"Acne","ឈឺត្រចៀក":"Earache","ឈឺបំពង់ក":"Sore throat","ឈឺខ្នង":"Back pain","ហៀរសំបោរ":"Runny nose","វិលមុខ":"Dizziness",
+ /* people (sample) */
+ "វេជ្ជបណ្ឌិត សុខ ចាន់ធី":"Dr. Sok Chanthy","វេជ្ជបណ្ឌិត ហេង វិចិត្រ":"Dr. Heng Vichet","វេជ្ជបណ្ឌិត លឹម ដារ៉ា":"Dr. Lim Dara","វេជ្ជបណ្ឌិត ឈិន ស្រីនិច":"Dr. Chhin Sreynich",
+ "វេជ្ជបណ្ឌិត ចាន់ សុវណ្ណ":"Dr. Chan Sovann","វេជ្ជបណ្ឌិត ពៅ ម៉ាលីស":"Dr. Pov Malis","វេជ្ជបណ្ឌិត សេង រតនា":"Dr. Seng Rathana",
+ "លោក ស៊ាង វណ្ណា":"Mr. Seang Vanna","សុភា":"Sophea","ដារ៉ា":"Dara","ក្រុមការងាររកពេទ្យ":"RokPet team",
+ /* staff */
+ "ចូលប្រើសម្រាប់មន្ទីរពេទ្យ":"Sign in for hospitals","ចូលដោយលេខទូរស័ព្ទ និងលេខកូដ SMS (OTP)":"Sign in with your phone number and an SMS code (OTP)",
+ "លេខទូរស័ព្ទ":"Phone number","ផ្ញើលេខកូដ":"Send code","ជំនាន់សាកល្បង៖ ជ្រើសគណនីខាងក្រោម":"Demo: choose an account below",
+ "ជំនាន់សាកល្បង៖ សូមជ្រើសគណនីខាងក្រោម":"Demo: please choose an account below","ចុះឈ្មោះមន្ទីរពេទ្យថ្មី":"Register a new hospital",
+ "រង់ចាំការអនុម័ត":"Awaiting approval","គម្រោងបង់ប្រាក់":"Paid plan","គម្រោងឥតគិតថ្លៃ":"Free plan","បោះបង់":"Cancel",
+ "ចុះឈ្មោះដោយឥតគិតថ្លៃ។ បន្ទាប់ពីអ្នកគ្រប់គ្រងពិនិត្យ និងអនុម័ត ព័ត៌មាននឹងបង្ហាញលើគេហទំព័រ។":"Registration is free. After an admin reviews and approves it, your information appears on the site.",
+ "ដាក់ពាក្យស្នើសុំ":"Submit application","ផ្ទាំងដើម":"Dashboard","ព័ត៌មានមូលដ្ឋាន":"Basic information","ចាកចេញ":"Sign out",
+ "ម៉ឺនុយមន្ទីរពេទ្យ":"Hospital menu","ម៉ឺនុយអ្នកគ្រប់គ្រង":"Admin menu",
+ "ពាក្យស្នើសុំរបស់អ្នក កំពុងរង់ចាំការពិនិត្យពីអ្នកគ្រប់គ្រង (ដាក់ថ្ងៃ":"Your application is waiting for admin review (submitted",
+ "។ យើងនឹងជូនដំណឹងតាមតេឡេក្រាម។":"). We will notify you on Telegram.",
+ "ពាក្យស្នើសុំត្រូវបានប្រគល់ឱ្យកែវិញ៖":"Your application was returned for changes:",
+ "គម្រោង":"Plan","បង់ប្រាក់":"Paid","ឥតគិតថ្លៃ":"Free","ដល់":"until","អត្ថបទបានផ្សព្វផ្សាយ":"Published articles","សេចក្តីព្រាង":"Drafts",
+ "ការកែប្រែដែលកំពុងរង់ចាំ":"Pending changes","រង់ចាំ":"Pending","អត្ថបទចុងក្រោយ":"Recent articles","គ្រប់គ្រងអត្ថបទ":"Manage articles",
+ "ការបង្ហោះអត្ថបទ":"Posting articles","ទំព័រណែនាំគ្លីនិក":"The clinic introduction page","ទំព័រណែនាំវេជ្ជបណ្ឌិត":"Doctor profile pages",
+ "សម្រាប់តែគម្រោងបង់ប្រាក់":"is for the paid plan only",
+ "គម្រោងឥតគិតថ្លៃ អាចចុះ និងកែព័ត៌មានមូលដ្ឋានរបស់មន្ទីរពេទ្យបានតែប៉ុណ្ណោះ។ ដំឡើងទៅគម្រោងបង់ប្រាក់ ដើម្បីបង្ហោះអត្ថបទ ទំព័រណែនាំគ្លីនិក និងវេជ្ជបណ្ឌិត។":"The free plan can only register and edit the hospital's basic information. Upgrade to the paid plan to post articles, a clinic introduction and doctor profiles.",
+ "ស្នើសុំដំឡើងគម្រោង":"Request upgrade","បានផ្ញើសំណើទៅក្រុមការងារ":"Request sent to the team",
+ "ការកែ ឈ្មោះ ឬអាសយដ្ឋាន ត្រូវរង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ ព័ត៌មានផ្សេងទៀតបង្ហាញភ្លាមៗ។":"Changes to the name or address need admin approval. Other information appears immediately.",
+ "រក្សាទុក":"Save","ឈ្មោះមន្ទីរពេទ្យ (ខ្មែរ)":"Hospital name (Khmer)","ឈ្មោះជាអក្សរឡាតាំង":"Name in Latin letters",
+ "សម្រាប់តែការស្វែងរកប៉ុណ្ណោះ មិនបង្ហាញលើគេហទំព័រ":"Used for search only; not shown on the site",
+ "រដ្ឋ ឬឯកជន កំណត់តាមប្រភេទដោយស្វ័យប្រវត្តិ":"Public or private is set automatically from the type",
+ "រក្សាទុកជាទម្រង់ +855":"Saved in +855 format","ខណ្ឌ / ស្រុក":"Khan / district","សង្កាត់ / ឃុំ":"Sangkat / commune","ផ្លូវ / ផ្ទះលេខ":"Street / house no.",
+ "ច័ន្ទ – សុក្រ":"Mon – Fri","បើបើក ២៤ម៉ោង មិនចាំបាច់បំពេញម៉ោងខាងលើទេ":"If open 24 hours, you don't need to fill in the hours above",
+ "ដើម្បីបង្ហាញក្នុងប៊ូតុងសង្គ្រោះបន្ទាន់ ២៤ម៉ោង":"to appear under the 24-hour emergency button","ជ្រើស":"Choose",
+ "បំបែកដោយសញ្ញាក្បៀស ( , ) ឧ. គ្រុនក្តៅ, ឈឺធ្មេញ, របួស":"Separate with commas ( , ) e.g. fever, toothache, injury",
+ "ទីតាំង (Google Maps)":"Location (Google Maps)","ចម្លងរយៈទទឹង និងរយៈបណ្តោយពី Google Maps":"Copy the latitude and longitude from Google Maps",
+ "ចំនួនរូបថត":"Number of photos","រូបខាងក្រៅ និងខាងក្នុង · ចំនួនអតិបរមា មិនទាន់កំណត់":"Outside and inside photos · maximum not decided yet",
+ "សារទៅកាន់អ្នកជំងឺ":"Message to patients",
+ "ប្រើទំព័រគំរូ":"Use sample page","ទំព័រថេរ មួយទំព័រក្នុងមួយមន្ទីរពេទ្យ។ បំពេញតាមទំព័រគំរូ។":"One fixed page per hospital. Fill it in from the sample page.",
+ "សេចក្តីផ្តើម":"Introduction","ចំណុចពិសេស និងបរិក្ខារ":"Highlights and equipment","មួយបន្ទាត់ សម្រាប់មួយចំណុច":"One line per item",
+ "រក្សាទុក និងផ្សព្វផ្សាយ":"Save and publish","បានបំពេញតាមទំព័រគំរូ":"Filled in from the sample page",
+ "បន្ថែមវេជ្ជបណ្ឌិត":"Add doctor","ទំព័រថេរ មួយទំព័រក្នុងវេជ្ជបណ្ឌិតម្នាក់។ បញ្ចូលតាមប្រអប់នីមួយៗ (មិនមែនសរសេរដោយសេរី)។":"One fixed page per doctor. Fill in each field (not free text).",
+ "ឈ្មោះ":"Name","ធ្វើការនៅ":"Works at","កែ":"Edit","កែព័ត៌មានវេជ្ជបណ្ឌិត":"Edit doctor","បទពិសោធន៍ (ឆ្នាំ)":"Experience (years)",
+ "ជំនាន់សាកល្បង៖ មិនទាន់អាចផ្ទុករូបបាន":"Demo: photo upload is not available yet",
+ "វេជ្ជបណ្ឌិតបានយល់ព្រម ឱ្យផ្សព្វផ្សាយព័ត៌មាននេះ":"The doctor has agreed to publish this information",
+ "សូមបញ្ជាក់ការយល់ព្រមរបស់វេជ្ជបណ្ឌិត":"Please confirm the doctor's consent",
+ "សរសេរអត្ថបទថ្មី":"Write a new article","អត្ថបទមានកាលបរិច្ឆេទ។ គ្មានកំណត់ចំនួន។":"Dated articles. No limit on the number.",
+ "ចំណងជើង":"Title","កាលបរិច្ឆេទ":"Date","អត្ថបទថ្មី":"New article","កែអត្ថបទ":"Edit article","អ្នកសរសេរ":"Author",
+ "អត្ថបទសុខភាព គួរមានឈ្មោះវេជ្ជបណ្ឌិត":"Health articles should name a doctor","ខ្លឹមសារ":"Content",
+ "សម្រាប់ចំណងជើងរង":"for subheadings","សម្រាប់បញ្ជី":"for lists","ផ្នែកពាក់ព័ន្ធ":"Related specialties",
+ "អត្ថបទព្រឹត្តិការណ៍ និងប្រូម៉ូសិន ត្រូវអ្នកគ្រប់គ្រងពិនិត្យជាមុន។":"Event and promotion articles must be reviewed by an admin first.",
+ "រក្សាទុកជាសេចក្តីព្រាង":"Save as draft","ផ្សព្វផ្សាយ":"Publish","បានផ្សព្វផ្សាយ":"Published","បានរក្សាទុកជាសេចក្តីព្រាង":"Saved as draft",
+ "បានលាក់":"Hidden","លាក់ (ផុតគម្រោង)":"Hidden (plan ended)","សូមបំពេញចំណងជើង":"Please enter a title","សូមបំពេញឈ្មោះ":"Please enter a name",
+ "បានដាក់ពាក្យស្នើសុំ":"Application submitted","បានរក្សាទុក · ឈ្មោះ/អាសយដ្ឋាន រង់ចាំការអនុម័ត":"Saved · name/address awaiting approval",
+ "បានរក្សាទុក · បង្ហាញភ្លាមៗ":"Saved · visible now","បានរក្សាទុក":"Saved",
+ /* admin */
+ "ទិដ្ឋភាពទូទៅ":"Overview","ពាក្យស្នើសុំ":"Applications","ចុះឈ្មោះជំនួស":"Register on behalf","មិនទាន់ផ្ទេរសិទ្ធិ":"Not yet handed over",
+ "គ្រប់គ្រងគម្រោង":"Plans","ទិន្នន័យមេ":"Master data","វចនានុក្រមពាក្យដូចគ្នា":"Synonym dictionary","ទំព័រគំរូ":"Sample pages",
+ "ពាក្យស្នើសុំរង់ចាំ":"Pending applications","មន្ទីរពេទ្យបានផ្សព្វផ្សាយ":"Published hospitals","ត្រូវធ្វើថ្ងៃនេះ":"To do today",
+ "ពិនិត្យការចុះឈ្មោះថ្មី":"Review new registrations","ពិនិត្យការកែឈ្មោះ/អាសយដ្ឋាន":"Review name/address changes",
+ "ពិនិត្យការស្នើសុំសិទ្ធិជាម្ចាស់":"Review ownership requests","ទាក់ទង":"Contact","ផ្ញើតំណ":"link sent","ថ្ងៃមុន":"days ago",
+ "មើល":"View","គ្មានការងាររង់ចាំ":"Nothing pending","ការចុះឈ្មោះថ្មី":"New registrations","ទីតាំង / ទូរស័ព្ទ":"Location / phone",
+ "ផ្នែក / រោគសញ្ញា":"Specialties / symptoms","វិធីផ្ទៀងផ្ទាត់":"Verification method","សកម្មភាព":"Actions","ដាក់":"Submitted",
+ "លេខអាជ្ញាប័ណ្ណក្រសួងសុខាភិបាល":"Ministry of Health license number","ចុះទៅដល់កន្លែង":"On-site visit",
+ "អនុម័ត":"Approve","ប្រគល់ឱ្យកែ":"Return for changes","មូលហេតុ (ពេលប្រគល់ឱ្យកែ)":"Reason (when returning)","គ្មាន":"None",
+ "ការកែឈ្មោះ / អាសយដ្ឋាន":"Name / address changes","ចំណុច":"Field","មុន":"Before","ក្រោយ":"After","បដិសេធ":"Reject",
+ "ការស្នើសុំសិទ្ធិជាម្ចាស់":"Ownership requests","ខ្ញុំជាអ្នកទទួលបន្ទុកមន្ទីរពេទ្យនេះ":"I am the person in charge of this hospital",
+ "សម្រាប់មន្ទីរពេទ្យដែលបានចុះឈ្មោះជំនួសរួចហើយ":"for hospitals already registered on their behalf","អ្នកស្នើសុំ":"Requester",
+ "ពេលចុះលក់ អ្នកគ្រប់គ្រងចុះព័ត៌មានជំនួសមន្ទីរពេទ្យ រួចផ្ញើតំណអញ្ជើញទៅអ្នកទទួលបន្ទុក។":"During sales visits, an admin registers the hospital on its behalf and sends an invitation link to the person in charge.",
+ "បានចុះឈ្មោះ និងផ្សព្វផ្សាយ៖":"Registered and published:","បានចុះឈ្មោះ និងផ្សព្វផ្សាយ":"Registered and published",
+ "តំណអញ្ជើញ (ផ្ញើតាម Telegram ឬ SMS)":"Invitation link (send via Telegram or SMS)","ផុតកំណត់":"Expires","រយៈពេលពិតប្រាកដ មិនទាន់កំណត់)":"exact period not decided yet)",
+ "អ្នកលក់ទទួលបន្ទុក":"Sales rep in charge","ចុះឈ្មោះ និងបង្កើតតំណអញ្ជើញ":"Register and create invitation link",
+ "មន្ទីរពេទ្យដែលបានចុះឈ្មោះជំនួស តែអ្នកទទួលបន្ទុកមិនទាន់បង្កើតគណនី។ ទាក់ទងបើលើស ៧ ថ្ងៃ។":"Hospitals registered on their behalf whose person in charge has not created an account yet. Contact them after 7 days.",
+ "អ្នកលក់":"Sales rep","កំណត់ចំណាំ":"Notes","ចេញតំណថ្មី":"Reissue link","បានផ្ទេររួច":"Handed over","បានផ្ទេរសិទ្ធិ":"Handed over",
+ "បានផ្ញើតំណតាមតេឡេក្រាម":"Sent link via Telegram","មិនទាន់ឆ្លើយតប":"No reply yet",
+ "គម្រោងឥតគិតថ្លៃ៖ ព័ត៌មានមូលដ្ឋានប៉ុណ្ណោះ · គម្រោងបង់ប្រាក់៖ បង្ហោះអត្ថបទ":"Free plan: basic information only · Paid plan: post articles",
+ "គ្មានកំណត់ និងបង្ហាញក្នុងស៊ុម":"with no limit and appear in the",
+ "។ ពេលឈប់បង់ អត្ថបទត្រូវលាក់ (មិនលុប)។":"frame. When payment stops, articles are hidden (not deleted).",
+ "ដល់ថ្ងៃ":"Until","ប្តូរទៅឥតគិតថ្លៃ":"Switch to free","ប្តូរទៅបង់ប្រាក់":"Switch to paid",
+ "ការបង់ប្រាក់៖ ABA Pay · KHQR · កាតឥណទាន (ចំនួនទឹកប្រាក់ មិនទាន់កំណត់)":"Payment: ABA Pay · KHQR · credit card (amount not decided yet)",
+ "បានប្តូរទៅគម្រោងបង់ប្រាក់":"Switched to the paid plan","បានប្តូរទៅគម្រោងឥតគិតថ្លៃ · អត្ថបទត្រូវបានលាក់":"Switched to the free plan · articles hidden",
+ "ច្បាប់ពិនិត្យអត្ថបទ មិនទាន់កំណត់។ អ្នកគ្រប់គ្រងអាចលាក់អត្ថបទដែលមិនសមរម្យ។":"Article review rules are not decided yet. Admins can hide inappropriate articles.",
+ "ពិនិត្យមុន":"Review first","លាក់":"Hide","បង្ហាញវិញ":"Show again","បានបង្ហាញវិញ":"Shown again",
+ "បង្ហាញលើអេក្រង់ជា":"Shown on screen as","បន្ថែមផ្នែកថ្មី":"Add a new specialty","ឧ. បេះដូង":"e.g. Cardiology","បន្ថែម":"Add","បានបន្ថែម":"Added",
+ "ប្រភេទមន្ទីរពេទ្យ":"Hospital types","តំបន់រដ្ឋបាល":"Administrative areas",
+ "នាំចូលទូទាំងប្រទេសពីទិន្នន័យផ្លូវការ (ប្រភពមិនទាន់កំណត់)។ ជំនាន់សាកល្បង៖ រាជធានីភ្នំពេញ":"Imported nationwide from official data (source not decided yet). Demo: Phnom Penh",
+ "ប្រមូលពាក្យរោគសញ្ញាដែលសរសេរខុសៗគ្នា ឱ្យស្វែងរកឃើញដូចគ្នា។ ឧ":"Groups symptom words written in different ways so they are found the same way. e.g",
+ "ពាក្យតំណាង":"Main word","ពាក្យដូចគ្នា":"Synonyms","បន្ថែមពាក្យ":"Add word","ពាក្យថ្មី":"New word","ពាក្យតំណាងថ្មី":"New main word",
+ "ពាក្យដូចគ្នា (បំបែកដោយក្បៀស)":"Synonyms (comma separated)","ពាក្យដែលស្វែងរកមិនឃើញ (ខែនេះ)":"Searches with no results (this month)",
+ "យកមកបន្ថែមក្នុងវចនានុក្រម":"Add them to the dictionary",
+ "មន្ទីរពេទ្យប្រើទំព័រគំរូនេះ ពេលបង្កើតទំព័រណែនាំគ្លីនិក និងវេជ្ជបណ្ឌិត។":"Hospitals use these sample pages when creating clinic introductions and doctor profiles.",
+ "បានអនុម័ត · ផ្ញើដំណឹងតាមតេឡេក្រាម":"Approved · notified on Telegram","បានអនុម័ត · ផ្ទេរសិទ្ធិគ្រប់គ្រង":"Approved · management rights transferred",
+ "បានអនុម័ត":"Approved","បានប្រគល់ឱ្យកែ":"Returned for changes","បានបដិសេធ":"Rejected","សូមសរសេរមូលហេតុ":"Please write a reason",
+ "ឈ្មោះមន្ទីរពេទ្យ":"Hospital name"
+};
+const SPEC_EN={general:"General medicine",peds:"Pediatrics",dental:"Dental",obgyn:"Obstetrics & Gynecology",eye:"Ophthalmology",skin:"Dermatology",surgery:"Surgery",ortho:"Orthopedics",ent:"ENT",emergency:"Emergency",
+ cardio:"Cardiology",gastro:"Gastroenterology",pulmo:"Pulmonology",neuro:"Neurology",psych:"Psychiatry",uro:"Urology",nephro:"Nephrology",endo:"Diabetes & Endocrinology",onco:"Oncology",physio:"Physiotherapy",radio:"Radiology",lab:"Laboratory"};
+const KHAN_EN={dp:"Daun Penh",cm:"Chamkar Mon",tk:"Tuol Kouk","7m":"7 Makara",bkk:"Boeng Keng Kang",mc:"Mean Chey",ss:"Sen Sok",rk:"Russey Keo",ca:"Chbar Ampov",ps:"Por Senchey",dk:"Dangkao",cc:"Chroy Changvar",pn:"Prek Pnov",kb:"Kamboul"};
+const SK_EN={"ផ្សារកណ្តាល ១":"Phsar Kandal 1","វត្តភ្នំ":"Wat Phnom","ស្រះចក":"Srah Chak","ទន្លេបាសាក់":"Tonle Bassac","បឹងត្របែក":"Boeng Trabek","ទួលទំពូង ១":"Toul Tumpung 1",
+ "ទឹកល្អក់ ១":"Teuk Laak 1","បឹងកក់ ១":"Boeng Kak 1","ផ្សារដេប៉ូ ១":"Phsar Depou 1","មនោរម្យ":"Monourom","វាលវង់":"Veal Vong","អូរឫស្សី ១":"Ou Ruessei 1",
+ "បឹងកេងកង ១":"Boeng Keng Kang 1","បឹងកេងកង ២":"Boeng Keng Kang 2","ទួលស្វាយព្រៃ ១":"Tuol Svay Prey 1","ស្ទឹងមានជ័យ ១":"Steung Meanchey 1","ចាក់អង្រែលើ":"Chak Angre Leu",
+ "ទឹកថ្លា":"Tuek Thla","ភ្នំពេញថ្មី":"Phnom Penh Thmei","ឫស្សីកែវ":"Russey Keo","ទួលសង្កែ ១":"Tuol Sangke 1","ច្បារអំពៅ ១":"Chbar Ampov 1","និរោធ":"Nirouth"};
+let I18N=null;
+function buildDict(){
+  const d=Object.assign({},EN);
+  SPECS.forEach(s=>{const e=SPEC_EN[s.id];if(e){d[s.km]=e;d["ផ្នែក"+s.km]=e}});
+  d["ផ្នែក"]="Specialty";
+  KHANS.forEach(k=>{const e=KHAN_EN[k.id];if(e){d[k.km]=e;d["ខណ្ឌ"+k.km]="Khan "+e}});
+  Object.keys(SK_EN).forEach(s=>{d[s]=SK_EN[s];d["សង្កាត់"+s]="Sangkat "+SK_EN[s]});
+  DB.hospitals.forEach(h=>{if(h.en)d[h.km]=h.en});
+  const keys=Object.keys(d).sort((a,b)=>b.length-a.length);
+  const idx={};keys.forEach(k=>{(idx[k[0]]=idx[k[0]]||[]).push(k)});
+  I18N={d,idx};
+}
+const isKh=c=>c>="ក"&&c<="៿";
+function tr(s){
+  if(!s||!/[ក-៿]/.test(s))return s;
+  if(!I18N)buildDict();
+  const out=[];let i=0,buf="";
+  const flush=()=>{if(buf){out.push({t:buf,en:false});buf=""}};
+  while(i<s.length){
+    const c=s[i];const cand=I18N.idx[c];let hit=null;
+    if(cand)for(const k of cand){if(s.startsWith(k,i)){hit=k;break}}
+    if(hit){flush();out.push({t:I18N.d[hit],en:true});i+=hit.length}else{buf+=c;i++}
+  }
+  flush();
+  let r="";
+  out.forEach((o,j)=>{const prev=out[j-1];if(prev&&prev.en&&o.en&&!/\s$/.test(r)&&!/^\s/.test(o.t)&&o.t&&r)r+=" ";r+=o.t});
+  return r.replace(/[០-៩]/g,d=>String(KD.indexOf(d))).replace(/។/g,".").replace(/៖/g,":");
+}
+function translateTree(root){
+  if(S.lang!=="en"||!root)return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{
+    if(!/[ក-៿]/.test(n.nodeValue))return NodeFilter.FILTER_REJECT;
+    const p=n.parentElement;if(p&&(p.closest("[data-raw]")||p.tagName==="TEXTAREA"||p.tagName==="SCRIPT"||p.tagName==="STYLE"))return NodeFilter.FILTER_REJECT;
+    return NodeFilter.FILTER_ACCEPT}});
+  const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+  nodes.forEach(n=>{n.nodeValue=tr(n.nodeValue)});
+  root.querySelectorAll("[placeholder],[aria-label],[title]").forEach(el=>{["placeholder","aria-label","title"].forEach(a=>{const v=el.getAttribute(a);if(v&&/[ក-៿]/.test(v)&&!el.closest("[data-raw]"))el.setAttribute(a,tr(v))})});
+}
+
+render();
+})();
+
+</script>
+</body>
+</html>
